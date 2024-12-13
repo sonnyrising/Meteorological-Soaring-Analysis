@@ -4,7 +4,8 @@ from Window_Class import Window
 ##Import libraries necessary to run the program
 import sys
 from PyQt6.QtWidgets import (
-    QApplication)
+    QApplication
+)
 
 ##Initilaise the PyQT application
 app = QApplication(sys.argv) 
