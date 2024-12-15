@@ -16,27 +16,42 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("My App")
-
-        layout1 = QHBoxLayout()
-        layout2 = QVBoxLayout()
-        layout3 = QVBoxLayout()
-
-        layout1.setContentsMargins(0,0,0,0)
-        layout1.setSpacing(10)
-
-        layout2.addWidget(Color('red'))
-        layout2.addWidget(Color('yellow'))
-        layout2.addWidget(Color('purple'))
-
-        layout1.addLayout( layout2 )
-
-        layout1.addWidget(Color('green'))
+        self.setWindowTitle("Widget Testing")      
         
+        ##Horizotnal layout            
+        hLayout = QHBoxLayout()
+        #Vertical Layout
+        vLayout = QVBoxLayout()
 
-        widget = QWidget()
-        widget.setLayout(layout1)
-        self.setCentralWidget(widget)
+        ##Sets spacing ad margins for the horizontal widget
+        hLayout.setContentsMargins(0,0,0,0)
+        hLayout.setSpacing(10)
+
+        ##Adds each coloured widget to the vertical widget
+        ##* The second layout must be fully defined before it is adde to the first layout
+        vLayout.addWidget(Color('red'))
+        vLayout.addWidget(Color('yellow'))
+        vLayout.addWidget(Color('purple'))
+
+        ##Adds the vertical layout as a widget to the horizontal layout
+        #?Does this instantiate the second layout?
+        hLayout.addLayout( vLayout )
+
+        ##Adds a second widget the same size as the vertical layout to the horizontal layout
+        hLayout.addWidget(Color('green'))
+
+        ##Instantiate both layouts as a widget
+        MainWidget = QWidget()
+        MainWidget.setLayout(hLayout)
+        
+        titleLayout = QVBoxLayout()
+        titleLayout.addWidget(Color('white'))
+        titleLayout.addWidget(MainWidget)
+        
+        WindowWidget = QWidget()
+        WindowWidget.setLayout(titleLayout)
+        
+        self.setCentralWidget(WindowWidget)
         
         
 
@@ -52,6 +67,7 @@ class Color(QWidget):
         
         ##Sets the palette to the passed color
         palette.setColor(QPalette.ColorRole.Window, QColor(color))
+        #? Why did putting . ColorRole fix this?
         #TODO: find out what .ColorRole does
         self.setPalette(palette)
         
