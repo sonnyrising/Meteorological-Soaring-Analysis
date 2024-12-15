@@ -16,6 +16,8 @@ class MainWindow(QMainWindow):
         
         self.setWindowTitle("Testing Widgets")
         
+        ##Instantiates the widget
+        ##Passes the background color as an argument
         widget = Color("red")
         self.setCentralWidget(widget)
 
@@ -23,10 +25,15 @@ class Color(QWidget):
     
     def __init__(self, color):
         super().__init__()
+        ##The widget will instantly fill with the background color
         self.setAutoFillBackground(True)
         
+        ##Creates an instance of a QPalette
         palette = self.palette()
+        
+        ##Sets the palette to the passed color
         palette.setColor(QPalette.ColorRole.Window, QColor(color))
+        #TODO: find out what .ColorRole does
         self.setPalette(palette)
         
 app = QApplication(sys.argv)
