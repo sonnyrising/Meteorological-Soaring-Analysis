@@ -7,9 +7,6 @@ from PyQt6.QtWidgets import (
     QLabel,
 )
 
-##Import the logo class
-from Logo_Class import Clickable_Image
-
 ##Define the Window class
 class Window(QWidget):
     def __init__(self, *args, **kwargs):
@@ -45,5 +42,6 @@ class Window(QWidget):
     def quit_to_menu(self):
         ##TODO: Subroutine to quit to main menu
         print("Quitting to menu")
+        
         
     
