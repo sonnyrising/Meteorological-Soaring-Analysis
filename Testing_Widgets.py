@@ -2,7 +2,9 @@ import sys
 from PyQt6.QtWidgets import (
     QApplication,
     QMainWindow,
-    QWidget
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
 )
 from PyQt6.QtGui import (
     QPalette,
@@ -14,12 +16,24 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         
-        self.setWindowTitle("Testing Widgets")
+        self.setWindowTitle('Testing Widgets')
         
-        ##Instantiates the widget
-        ##Passes the background color as an argument
-        widget = Color("red")
+        ##Create a layout using the QHBoxLayout
+        ##This places widgets horizontally
+        layout = QHBoxLayout()
+        
+        ##Add 2 widgets to the layout
+        layout.addWidget(Color('red'))
+        layout.addWidget(Color('blue'))
+        
+        ##Instantiate a single widget and set the layout to the
+        ##layout just created
+        ##*(Effectively instiates what was just defined)
+        widget = QWidget()
+        widget.setLayout(layout)
         self.setCentralWidget(widget)
+        
+        
 
 class Color(QWidget):
     
