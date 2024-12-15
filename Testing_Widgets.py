@@ -20,17 +20,28 @@ class MainWindow(QMainWindow):
         
         ##Create a layout using the QHBoxLayout
         ##This places widgets horizontally
-        layout = QHBoxLayout()
+        hLayout = QHBoxLayout()
+        vLayout = QVBoxLayout()
         
-        ##Add 2 widgets to the layout
-        layout.addWidget(Color('red'))
-        layout.addWidget(Color('blue'))
+        ##Create the left box
+        hLayout.addWidget(Color('red'))
+        
+        ##Create a vertical box layout within the left box
+        hLayout.addLayout( vLayout )
+        
+        ##Add widgets to the vertical box
+        #vLayout.addWidget('green')
+        # vLayout.addWidget('purple')
+        # vLayout.addWidget('pink')
+        
+        ##Create the right box
+        hLayout.addWidget(Color('blue'))
         
         ##Instantiate a single widget and set the layout to the
         ##layout just created
         ##*(Effectively instiates what was just defined)
         widget = QWidget()
-        widget.setLayout(layout)
+        widget.setLayout(hLayout)
         self.setCentralWidget(widget)
         
         
