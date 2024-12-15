@@ -40,6 +40,12 @@ class MainWindow(QMainWindow):
         ##Adds a second widget the same size as the vertical layout to the horizontal layout
         hLayout.addWidget(Color('green'))
 
+        ##Set the "button" area of the window (0th index) to take up 30% of the horizontal window space
+        hLayout.setStretch(0, 3)
+        ##Therefore set the 1st index area of the window to take up 70% of the horizontal window space
+        ##?Is this necessary?
+        hLayout.setStretch(1,7)
+        
         ##Instantiate both layouts as a widget
         MainWidget = QWidget()
         MainWidget.setLayout(hLayout)
@@ -48,6 +54,11 @@ class MainWindow(QMainWindow):
         titleLayout.addWidget(Color('white'))
         titleLayout.addWidget(MainWidget)
         
+        ##Set the white top widget (0th index) to take up 10% of the window
+        titleLayout.setStretch(0,1)
+        ##Therefore the 1st index must take up 90%
+        ##?Is this necessary?
+        titleLayout.setStretch(1,9)
         WindowWidget = QWidget()
         WindowWidget.setLayout(titleLayout)
         
