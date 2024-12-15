@@ -32,6 +32,7 @@ class MainWindow(QMainWindow):
         vLayout.addWidget(Color('red'))
         vLayout.addWidget(Color('yellow'))
         vLayout.addWidget(Color('purple'))
+        vLayout.addWidget(Color('black'))
 
         ##Adds the vertical layout as a widget to the horizontal layout
         #?Does this instantiate the second layout?
