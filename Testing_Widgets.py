@@ -18,12 +18,12 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle("Widget Testing")      
         
-        ##Horizotnal layout            
+        ##Horizontal layout            
         hLayout = QHBoxLayout()
-        #Vertical Layout
+        ##Vertical Layout
         vLayout = QVBoxLayout()
 
-        ##Sets spacing ad margins for the horizontal widget
+        ##Sets spacing and margins for the horizontal widget
         hLayout.setContentsMargins(0,0,0,0)
         hLayout.setSpacing(10)
 
@@ -78,7 +78,7 @@ class Color(QWidget):
         
         ##Sets the palette to the passed color
         palette.setColor(QPalette.ColorRole.Window, QColor(color))
-        #? Why did putting . ColorRole fix this?
+        #? Why did putting .ColorRole fix this?
         #TODO: find out what .ColorRole does
         self.setPalette(palette)
         
