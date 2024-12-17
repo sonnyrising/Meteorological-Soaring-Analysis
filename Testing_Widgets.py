@@ -57,24 +57,24 @@ class MainWindow(QMainWindow):
         ##and the rest of the window as the second, lower box
         titleLayout = QVBoxLayout()
         
-        ##Create a QLable (textbox) holding the title of the window
-        ##*This is a form of a widet like the coloured widgets
-        titleLabel = QLabel("Meteorological Soaring Analysis")
+        # ##Create a QLable (textbox) holding the title of the window
+        # ##*This is a form of a widet like the coloured widgets
+        # titleLabel = QLabel("Meteorological Soaring Analysis")
         
-        ##Set the background color of the QLabel
-        titleLabel.setAutoFillBackground(True)
-        palette = titleLabel.palette()
-        palette.setColor(QPalette.ColorRole.Window, QColor("white"))
-        titleLabel.setPalette(palette)
+        # ##Set the background color of the QLabel
+        # titleLabel.setAutoFillBackground(True)
+        # palette = titleLabel.palette()
+        # palette.setColor(QPalette.ColorRole.Window, QColor("white"))
+        # titleLabel.setPalette(palette)
         
-        ##Allign the text to the centre of the QLabel
-        titleLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        # ##Allign the text to the centre of the QLabel
+        # titleLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
-        ##Use QSS (A version of CSS) to style the text
-        titleLabel.setStyleSheet("color: blue; font-size: 72px")
+        # ##Use QSS (A version of CSS) to style the text
+        # titleLabel.setStyleSheet("color: blue; font-size: 72px")
         
-        titleLayout.addWidget(titleLabel)
-        #titleLayout.addWidget(Color("White"))
+        titleLayout.addWidget(Title("Meteorological Soaring Analysis"))
+    
         
         titleLayout.addWidget(MainWidget)
         
@@ -91,7 +91,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(WindowWidget)
         
         
-
+##This class creates a widget filled with a solid color which is passed in as a parameter
 class Color(QWidget):
     
     def __init__(self, color):
@@ -102,13 +102,41 @@ class Color(QWidget):
         ##Creates an instance of a QPalette
         palette = self.palette()
         
-        ##Sets the palette to the passed color
+        ##Sets the palette to the passed colour
         palette.setColor(QPalette.ColorRole.Window, QColor(color))
         #? Why did putting .ColorRole fix this?
         #TODO: find out what .ColorRole does
         self.setPalette(palette)
+
+
+
+#This class creates a widget, containing text that is passed in as a pareameter
+##It uses QSS to style as a title
+class Title(QLabel):
+    
+    def __init__(self, text):
+        super().__init__()
+        
+        ##Create a QLable (textbox) holding the title of the window
+        ##*This is a form of a widget, like the coloured widgets
+        titleLabel = QLabel(text)
+        self.setText(text)
+        
+        ##Set the background color of the QLabel
+        self.setAutoFillBackground(True)
+        palette = titleLabel.palette()
+        palette.setColor(QPalette.ColorRole.Window, QColor("white"))
+        self.setPalette(palette)
+        
+        ##Allign the text to the centre of the QLabel
+        self.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        ##Use QSS (A version of CSS) to style the text
+        self.setStyleSheet("color: blue; font-size: 72px")
         
         
+        
+ 
 
         
 app = QApplication(sys.argv)
