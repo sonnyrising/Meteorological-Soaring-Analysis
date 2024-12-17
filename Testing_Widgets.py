@@ -57,22 +57,6 @@ class MainWindow(QMainWindow):
         ##and the rest of the window as the second, lower box
         titleLayout = QVBoxLayout()
         
-        # ##Create a QLable (textbox) holding the title of the window
-        # ##*This is a form of a widet like the coloured widgets
-        # titleLabel = QLabel("Meteorological Soaring Analysis")
-        
-        # ##Set the background color of the QLabel
-        # titleLabel.setAutoFillBackground(True)
-        # palette = titleLabel.palette()
-        # palette.setColor(QPalette.ColorRole.Window, QColor("white"))
-        # titleLabel.setPalette(palette)
-        
-        # ##Allign the text to the centre of the QLabel
-        # titleLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        
-        # ##Use QSS (A version of CSS) to style the text
-        # titleLabel.setStyleSheet("color: blue; font-size: 72px")
-        
         titleLayout.addWidget(Title("Meteorological Soaring Analysis"))
     
         
