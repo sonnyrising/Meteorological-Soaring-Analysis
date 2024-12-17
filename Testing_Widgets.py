@@ -1,10 +1,12 @@
 import sys
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QApplication,
     QMainWindow,
     QWidget,
     QVBoxLayout,
     QHBoxLayout,
+    QLabel
 )
 from PyQt6.QtGui import (
     QPalette,
@@ -51,15 +53,38 @@ class MainWindow(QMainWindow):
         MainWidget = QWidget()
         MainWidget.setLayout(hLayout)
         
+        ##Create a vertical box layout that will hold the title as its first box
+        ##and the rest of the window as the second, lower box
         titleLayout = QVBoxLayout()
-        titleLayout.addWidget(Color('white'))
+        
+        ##Create a QLable (textbox) holding the title of the window
+        ##*This is a form of a widet like the coloured widgets
+        titleLabel = QLabel("Meteorological Soaring Analysis")
+        
+        ##Set the background color of the QLabel
+        titleLabel.setAutoFillBackground(True)
+        palette = titleLabel.palette()
+        palette.setColor(QPalette.ColorRole.Window, QColor("white"))
+        titleLabel.setPalette(palette)
+        
+        ##Allign the text to the centre of the QLabel
+        titleLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        ##Use QSS (A version of CSS) to style the text
+        titleLabel.setStyleSheet("color: blue; font-size: 72px")
+        
+        titleLayout.addWidget(titleLabel)
+        #titleLayout.addWidget(Color("White"))
+        
         titleLayout.addWidget(MainWidget)
+        
         
         ##Set the white top widget (0th index) to take up 10% of the window
         titleLayout.setStretch(0,1)
         ##Therefore the 1st index must take up 90%
         ##?Is this necessary?
         titleLayout.setStretch(1,9)
+        
         WindowWidget = QWidget()
         WindowWidget.setLayout(titleLayout)
         
@@ -82,6 +107,9 @@ class Color(QWidget):
         #? Why did putting .ColorRole fix this?
         #TODO: find out what .ColorRole does
         self.setPalette(palette)
+        
+        
+
         
 app = QApplication(sys.argv)
     
