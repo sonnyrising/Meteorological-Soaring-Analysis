@@ -18,7 +18,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("Widget Testing")      
+        self.setWindowTitle("Widget Testing")    
         
         ##Horizontal layout            
         hLayout = QHBoxLayout()
@@ -57,11 +57,15 @@ class MainWindow(QMainWindow):
         ##and the rest of the window as the second, lower box
         titleLayout = QVBoxLayout()
         
+        ##Instantiates the title class, passing in the text as a parameter
         titleLayout.addWidget(Title("Meteorological Soaring Analysis"))
     
-        
+        ##Adds the main widget (containing buttons etc) below the title
         titleLayout.addWidget(MainWidget)
         
+        ##With the main widget added, the title layout can be considered to be the main
+        ##(and only) layout
+        mainLayout = titleLayout
         
         ##Set the white top widget (0th index) to take up 10% of the window
         titleLayout.setStretch(0,1)
@@ -69,9 +73,13 @@ class MainWindow(QMainWindow):
         ##?Is this necessary?
         titleLayout.setStretch(1,9)
         
+        ##Instantiates a widget to contain the layouts
         WindowWidget = QWidget()
-        WindowWidget.setLayout(titleLayout)
         
+        ##Sets the layout of the widget to the layout created
+        WindowWidget.setLayout(mainLayout)
+        
+        ##Ensures the widget containing all of the window is centralised
         self.setCentralWidget(WindowWidget)
         
         
@@ -122,10 +130,14 @@ class Title(QLabel):
         
  
 
-        
+##Instantiate a QtApplication
 app = QApplication(sys.argv)
-    
+
+##Set the active window to the main window we have been working with
 window = MainWindow()
-window.show()
-    
+
+##Open the window maximised (Windowed FullScreen)
+window.showMaximized()
+
+##Run the app
 app.exec()
