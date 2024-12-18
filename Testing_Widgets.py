@@ -37,16 +37,16 @@ class MainWindow(QMainWindow):
         ##Adds each coloured widget to the vertical widget
         ##* The second layout must be fully defined before it is adde to the first layout
         vLayout.addWidget(Menu_Button(text = 'View Data',
-                                      color = 'red',
+                                      color = '#7ED941',
                                       subroutine = self.test))
         vLayout.addWidget(Menu_Button(text = 'Run Analysis',
-                                      color = 'yellow',
+                                      color = '#7ED941',
                                       subroutine = self.test))
         vLayout.addWidget(Menu_Button(text = 'Info',
-                                      color = 'purple',
+                                      color = '#7ED941',
                                       subroutine = self.test))
         vLayout.addWidget(Menu_Button(text = 'Quit',
-                                      color = 'blue',
+                                      color = '#7ED941',
                                       subroutine = self.test))
         
         vLayout.setStretch(0,1)
@@ -135,17 +135,16 @@ class Title(QLabel):
         ##Set the background color of the QLabel
         self.setAutoFillBackground(True)
         palette = titleLabel.palette()
-        palette.setColor(QPalette.ColorRole.Window, QColor("black"))
+        palette.setColor(QPalette.ColorRole.Window, QColor(149, 209, 255))
         self.setPalette(palette)
         
         ##Allign the text to the centre of the QLabel
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         ##Use QSS (A form of CSS) to style the text
-        self.setStyleSheet("""color: white;
+        self.setStyleSheet("""color: black;
                            font-size: 72px;
                            font-family: calibri;
-                           text-decoration: underline
                            """)
 
 ##A class for custom buttons
