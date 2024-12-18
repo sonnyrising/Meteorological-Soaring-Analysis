@@ -9,6 +9,7 @@ from PyQt6.QtWidgets import (
     QLabel,
     QPushButton,
     QSizePolicy,
+    QScrollArea
 )
 from PyQt6.QtGui import (
     QPalette,
@@ -44,10 +45,10 @@ class MainWindow(QMainWindow):
                                       subroutine = self.test))
         vLayout.addWidget(Menu_Button(text = 'Info',
                                       color = '#7ED941',
-                                      subroutine = self.test))
+                                      subroutine = self.show_info))
         vLayout.addWidget(Menu_Button(text = 'Quit',
                                       color = '#7ED941',
-                                      subroutine = self.test))
+                                      subroutine = self.quit))
         
         vLayout.setStretch(0,1)
         vLayout.setStretch(1,1)
@@ -58,8 +59,28 @@ class MainWindow(QMainWindow):
         ##Adds the vertical layout as a widget to the horizontal layout
         hLayout.addLayout( vLayout )
 
-        ##Adds a second widget the same size as the vertical layout to the horizontal layout
-        hLayout.addWidget(Color('green'))
+        ##Create the widget to display info
+        self.info_widget = QLabel()
+        
+        ##Set the text to allign to the centre of the label
+        self.info_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        ##Allow the label to expand vertically
+        ##(By default, widgets can only expand horizontally)
+        self.info_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        
+        ##Wordwrap allows lines to be cut and added to another line below
+        ##This prevents lines from spilling over the window
+        self.info_widget.setWordWrap(True)
+
+        ##Create a scroll area attached to the info label
+        ##This allows the text to be scrolled with either the scrollbar created or the scroll wheel
+        scroll_area = QScrollArea()
+        scroll_area.setWidget(self.info_widget)
+        scroll_area.setWidgetResizable(True)
+        
+        ##Adds the scroll area (and the info label) to the layout
+        hLayout.addWidget(scroll_area)
 
         ##Set the "button" area of the window (0th index) to take up 30% of the horizontal window space
         hLayout.setStretch(0, 3)
@@ -101,6 +122,16 @@ class MainWindow(QMainWindow):
         
     def test(self):
         print("Button Clicked")
+        
+    def quit(self):
+        QApplication.quit()
+        
+    def show_info(self):
+        info_doc = open('main_menu_info.txt','r')
+        self.info_widget.setText(info_doc.read())
+        info_doc.close()
+        
+        
         
 ##This class creates a widget filled with a solid color which is passed in as a parameter
 class Color(QWidget):
