@@ -6,12 +6,17 @@ from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QHBoxLayout,
-    QLabel
+    QLabel,
+    QPushButton,
+    QSizePolicy,
 )
 from PyQt6.QtGui import (
     QPalette,
-    QColor
+    QColor,
+    
 )
+
+
 
 class MainWindow(QMainWindow):
 
@@ -31,13 +36,26 @@ class MainWindow(QMainWindow):
 
         ##Adds each coloured widget to the vertical widget
         ##* The second layout must be fully defined before it is adde to the first layout
-        vLayout.addWidget(Color('red'))
-        vLayout.addWidget(Color('yellow'))
-        vLayout.addWidget(Color('purple'))
-        vLayout.addWidget(Color('black'))
-
+        vLayout.addWidget(Menu_Button(text = 'View Data',
+                                      color = 'red',
+                                      subroutine = self.test))
+        vLayout.addWidget(Menu_Button(text = 'Run Analysis',
+                                      color = 'yellow',
+                                      subroutine = self.test))
+        vLayout.addWidget(Menu_Button(text = 'Info',
+                                      color = 'purple',
+                                      subroutine = self.test))
+        vLayout.addWidget(Menu_Button(text = 'Quit',
+                                      color = 'blue',
+                                      subroutine = self.test))
+        
+        vLayout.setStretch(0,1)
+        vLayout.setStretch(1,1)
+        vLayout.setStretch(2,1)
+        vLayout.setStretch(3,1)
+        
+        
         ##Adds the vertical layout as a widget to the horizontal layout
-        #?Does this instantiate the second layout?
         hLayout.addLayout( vLayout )
 
         ##Adds a second widget the same size as the vertical layout to the horizontal layout
@@ -46,7 +64,6 @@ class MainWindow(QMainWindow):
         ##Set the "button" area of the window (0th index) to take up 30% of the horizontal window space
         hLayout.setStretch(0, 3)
         ##Therefore set the 1st index area of the window to take up 70% of the horizontal window space
-        ##?Is this necessary?
         hLayout.setStretch(1,7)
         
         ##Instantiate both layouts as a widget
@@ -70,7 +87,6 @@ class MainWindow(QMainWindow):
         ##Set the white top widget (0th index) to take up 10% of the window
         titleLayout.setStretch(0,1)
         ##Therefore the 1st index must take up 90%
-        ##?Is this necessary?
         titleLayout.setStretch(1,9)
         
         ##Instantiates a widget to contain the layouts
@@ -83,6 +99,9 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(WindowWidget)
         
         
+    def test(self):
+        print("Button Clicked")
+        
 ##This class creates a widget filled with a solid color which is passed in as a parameter
 class Color(QWidget):
     
@@ -92,12 +111,11 @@ class Color(QWidget):
         self.setAutoFillBackground(True)
         
         ##Creates an instance of a QPalette
+        ##This is used for setting the fill color of the widget
         palette = self.palette()
         
         ##Sets the palette to the passed colour
         palette.setColor(QPalette.ColorRole.Window, QColor(color))
-        #? Why did putting .ColorRole fix this?
-        #TODO: find out what .ColorRole does
         self.setPalette(palette)
 
 
@@ -117,15 +135,33 @@ class Title(QLabel):
         ##Set the background color of the QLabel
         self.setAutoFillBackground(True)
         palette = titleLabel.palette()
-        palette.setColor(QPalette.ColorRole.Window, QColor("white"))
+        palette.setColor(QPalette.ColorRole.Window, QColor("black"))
         self.setPalette(palette)
         
         ##Allign the text to the centre of the QLabel
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
-        ##Use QSS (A version of CSS) to style the text
-        self.setStyleSheet("color: blue; font-size: 72px")
+        ##Use QSS (A form of CSS) to style the text
+        self.setStyleSheet("""color: white;
+                           font-size: 72px;
+                           font-family: calibri;
+                           text-decoration: underline
+                           """)
+
+##A class for custom buttons
+class Menu_Button(QPushButton):
+    
+    def __init__(self, text, color, subroutine):
+        super().__init__(text)
         
+        ##Set the button color using QSS
+        self.setStyleSheet(f"background-color: {color}; font-size: 36px; color: black")
+        
+        self.clicked.connect(subroutine)
+        
+        self.setSizePolicy(
+        QSizePolicy.Policy.MinimumExpanding,
+        QSizePolicy.Policy.MinimumExpanding)
         
         
  
