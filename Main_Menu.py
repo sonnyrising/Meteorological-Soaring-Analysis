@@ -30,7 +30,7 @@ class MainWindow(QMainWindow):
         ##Inherits from QMainWindow, the window class from the PyQt library
         super().__init__()
 
-        self.setWindowTitle("Widget Testing")    
+        self.setWindowTitle("Meteorological Soaring Analysis")    
         
         ##Horizontal layout            
         hLayout = QHBoxLayout()
@@ -88,7 +88,7 @@ class MainWindow(QMainWindow):
         self.scroll_area.setWidgetResizable(True)
         
         ##Create a button to close the info box
-        closeButton = QPushButton("Close")
+        closeButton = QPushButton("Close Info")
         closeButton.clicked.connect(self.close_info)
         
         ##Adds the scroll area (and the info label) to the layout
