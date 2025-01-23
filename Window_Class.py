@@ -30,14 +30,6 @@ class Window(QWidget):
         ##Tuple to hold buttons
         self.buttons = ()
         
-        # Create a clickable image instance (logo)
-        self.logo = Clickable_Image("logo.png", self.quit_to_menu)
-        
-        # Layout to display the clickable image
-        layout = QVBoxLayout()
-        layout.addWidget(self.logo)
-        self.setLayout(layout)
-        
         
     def quit_to_menu(self):
         ##TODO: Subroutine to quit to main menu
