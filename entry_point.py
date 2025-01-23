@@ -10,9 +10,6 @@ from PyQt6.QtWidgets import (
 ##Initilaise the PyQT application
 app = QApplication(sys.argv) 
 
-##Create an instance of the window
-window = Window()
-
 ##Keeps the app responsive, listening for user inputs
 ##Ensures the app closes properly
 sys.exit(app.exec())
