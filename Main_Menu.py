@@ -250,19 +250,3 @@ class Conf_Dialogue(QDialog):
         layout.addWidget(message)
         layout.addWidget(self.button_box)
         self.setLayout(layout)
-        
-        
-        
- 
-
-##Instantiate a QtApplication
-app = QApplication(sys.argv)
-
-##Set the active window to the main window we have been working with
-window = MainWindow()
-
-##Open the window maximised (Windowed FullScreen)
-window.showMaximized()
-
-##Run the app
-app.exec()

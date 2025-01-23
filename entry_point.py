@@ -1,5 +1,5 @@
 ##Import each class from the other files
-from Window_Class import Window
+from Main_Menu import MainWindow
 
 ##Import libraries necessary to run the program
 import sys
