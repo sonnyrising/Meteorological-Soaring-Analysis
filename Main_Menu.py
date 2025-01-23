@@ -27,6 +27,7 @@ from PyQt6.QtGui import (
 class MainWindow(QMainWindow):
 
     def __init__(self):
+        ##Inherits from QMainWindow, the window class from the PyQt library
         super().__init__()
 
         self.setWindowTitle("Widget Testing")    
@@ -55,6 +56,8 @@ class MainWindow(QMainWindow):
                                       color = '#7ED941',
                                       subroutine = self.quit))
         
+        ##Sets each button to have the same stretch factor
+        ##i.e. each button will have the same size and fill the layout
         vLayout.setStretch(0,1)
         vLayout.setStretch(1,1)
         vLayout.setStretch(2,1)
@@ -80,12 +83,17 @@ class MainWindow(QMainWindow):
 
         ##Create a scroll area attached to the info label
         ##This allows the text to be scrolled with either the scrollbar created or the scroll wheel
-        scroll_area = QScrollArea()
-        scroll_area.setWidget(self.info_widget)
-        scroll_area.setWidgetResizable(True)
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidget(self.info_widget)
+        self.scroll_area.setWidgetResizable(True)
+        
+        ##Create a button to close the info box
+        closeButton = QPushButton("Close")
+        closeButton.clicked.connect(self.close_info)
         
         ##Adds the scroll area (and the info label) to the layout
-        hLayout.addWidget(scroll_area)
+        hLayout.addWidget(self.scroll_area)
+        hLayout.addWidget(closeButton)
 
         ##Set the "button" area of the window (0th index) to take up 30% of the horizontal window space
         hLayout.setStretch(0, 3)
@@ -123,22 +131,31 @@ class MainWindow(QMainWindow):
         
         ##Ensures the widget containing all of the window is centralised
         self.setCentralWidget(WindowWidget)
-        
-        
+    
+    ##Used to test the buttons are working
     def test(self):
         print("Button Clicked")
+    
+    ##Fills the scroll area with an empty string
+    ##Giving the effect that it has been closed
+    def close_info(self):
+        self.info_widget.setText("")
         
     def quit(self):
         ##Create a dialogue box for quit confirmation
+        ##Parameter 1 is the window title
+        ##Parameter 2 is the statement in the dialogue box
         quitDialogue = Conf_Dialogue("Quit",
                                      "Are you sure you want to quit?"
                                 )
         if quitDialogue.exec():
+            ##If the user clicks yes in the dialogue box, the application will quit
             QApplication.quit()
         else:
+            ##If the user clicks cancel in the dialogue box, the application will continue running
             print("Cancel")
         
-        
+    ##Reads the info from the relevant text file and displays it in the info widget     
     def show_info(self):
         info_doc = open('main_menu_info.txt','r')
         self.info_widget.setText(info_doc.read())
@@ -164,7 +181,7 @@ class Color(QWidget):
 
 
 
-#This class creates a widget, containing text that is passed in as a pareameter
+##This class creates a widget, containing text that is passed in as a pareameter
 ##It uses QSS to style as a title
 class Title(QLabel):
     
