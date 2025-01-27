@@ -66,6 +66,9 @@ class MainWindow(QMainWindow):
         
         ##Adds the vertical layout as a widget to the horizontal layout
         hLayout.addLayout( vLayout )
+        
+        ##Initially, the info window is not displayed, so the close button is not needed
+        self.info_shown = False
 
         ##Create the widget to display info
         self.info_widget = QLabel()
@@ -88,12 +91,16 @@ class MainWindow(QMainWindow):
         self.scroll_area.setWidgetResizable(True)
         
         ##Create a button to close the info box
-        closeButton = QPushButton("Close Info")
-        closeButton.clicked.connect(self.close_info)
+        self.closeButton = QPushButton("Close Info")
+        self.closeButton.clicked.connect(self.close_info)
         
         ##Adds the scroll area (and the info label) to the layout
         hLayout.addWidget(self.scroll_area)
-        hLayout.addWidget(closeButton)
+        hLayout.addWidget(self.closeButton)
+        if self.info_shown == False:
+            self.closeButton.hide()
+        else:
+            self.closeButton.show()
 
         ##Set the "button" area of the window (0th index) to take up 30% of the horizontal window space
         hLayout.setStretch(0, 3)
@@ -140,6 +147,7 @@ class MainWindow(QMainWindow):
     ##Giving the effect that it has been closed
     def close_info(self):
         self.info_widget.setText("")
+        self.closeButton.hide()
         
     def quit(self):
         ##Create a dialogue box for quit confirmation
@@ -159,6 +167,8 @@ class MainWindow(QMainWindow):
     def show_info(self):
         info_doc = open('main_menu_info.txt','r')
         self.info_widget.setText(info_doc.read())
+        self.closeButton.show()
+        self.info_shown = True
         info_doc.close()
         
         
