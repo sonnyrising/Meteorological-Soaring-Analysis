@@ -73,6 +73,10 @@ class MainWindow(QMainWindow):
         ##Create the widget to display info
         self.info_widget = QLabel()
         
+        ##Set the font size of the text in the info scroll area
+        ##Using inline styling with QSS
+        self.info_widget.setStyleSheet("font-size: 24px")
+        
         ##Set the text to allign to the centre of the label
         self.info_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
@@ -214,7 +218,7 @@ class Title(QLabel):
         
         ##Use QSS (A form of CSS) to style the text
         self.setStyleSheet("""color: black;
-                           font-size: 72px;
+                           font-size: 64px;
                            font-family: calibri;
                            """)
 
