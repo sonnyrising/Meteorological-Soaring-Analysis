@@ -13,13 +13,20 @@ from PyQt6.QtWidgets import (
     QScrollArea,
     QDialog,
     QDialogButtonBox,
-    QMessageBox,
+    QMessageBox
     
     
 )
 from PyQt6.QtGui import (
     QPalette,
     QColor,
+    QIcon,
+    QPixmap,
+
+    
+)
+from PyQt6.QtCore import (
+    QSize,
     
 )
 
@@ -121,9 +128,18 @@ class MainWindow(QMainWindow):
         ##and the rest of the window as the second, lower box
         titleLayout = QVBoxLayout()
         
+        ##Create a horizontal box layout to contain the title and logo
+        title_logo_layout = QHBoxLayout()
+        
         ##Instantiates the title class, passing in the text as a parameter
-        titleLayout.addWidget(Title("Meteorological Soaring Analysis"))
-    
+        title_logo_layout.addWidget(Title("Meteorological Soaring Analysis"))
+        
+        ##Add the logo to the horizontal layout
+        title_logo_layout.addWidget(Image_Button("logo.png", self.test))
+        
+        ##Add the title and logo to the top of the window
+        titleLayout.addLayout(title_logo_layout)
+        
         ##Adds the main widget (containing buttons etc) below the title
         titleLayout.addWidget(MainWidget)
         
@@ -264,7 +280,7 @@ class Menu_Button(QPushButton):
         ##Increase the hue of the color passed in by 0.2
         hover_color = increase_hue(color, 0.2)
         
-        
+        ##Set the stylesheet of the button using QSS
         self.setStyleSheet(f"""
         QPushButton {{
             color: black;
@@ -312,6 +328,17 @@ class Conf_Dialogue(QDialog):
         layout.addWidget(self.button_box)
         self.setLayout(layout)
         
+class Image_Button(QPushButton):
+    def __init__(self, image_path, subroutine):
+        super().__init__()
+        self.image_path = image_path
+        self.subroutine = subroutine
+        self.setIcon(QIcon(self.image_path))
+        self.setIconSize(QSize(100,100))
+        self.clicked.connect(self.subroutine)
+        self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding)
+    
+
         
         
  
