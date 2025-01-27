@@ -1,4 +1,5 @@
 import sys
+import colorsys
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QApplication,
@@ -101,6 +102,7 @@ class MainWindow(QMainWindow):
         ##Adds the scroll area (and the info label) to the layout
         hLayout.addWidget(self.scroll_area)
         hLayout.addWidget(self.closeButton)
+        ##The close button is initially hidden, as the info is not yet shown
         if self.info_shown == False:
             self.closeButton.hide()
         else:
@@ -152,6 +154,7 @@ class MainWindow(QMainWindow):
     def close_info(self):
         self.info_widget.setText("")
         self.closeButton.hide()
+        self.info_shown = False
         
     def quit(self):
         ##Create a dialogue box for quit confirmation
@@ -216,20 +219,63 @@ class Title(QLabel):
         ##Allign the text to the centre of the QLabel
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
-        ##Use QSS (A form of CSS) to style the text
+        ##Use QSS (A form of CSS) to style the title text
         self.setStyleSheet("""color: black;
                            font-size: 64px;
                            font-family: calibri;
                            """)
+        
+##!AI WRITTEN CODE STARTS HERE
+##Converts the hex value passed to the button class into RGB
+def hex_to_rgb(hex_color):
+    hex_color = hex_color.lstrip('#')
+    return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+
+##Converts the RGB value created by the hex_to_rgb function back into hex
+def rgb_to_hex(rgb_color):
+    return '#{:02x}{:02x}{:02x}'.format(*rgb_color)
+
+##Increases the hue of the color passed in by a given increment
+def increase_hue(hex_color, increment):
+    # Convert hex to RGB
+    r, g, b = hex_to_rgb(hex_color)
+
+    # Convert RGB to HSV
+    h, s, v = colorsys.rgb_to_hsv(r/255.0, g/255.0, b/255.0)
+
+    # Increase the hue
+    h = (h + increment) % 1.0
+
+    # Convert HSV back to RGB
+    r, g, b = colorsys.hsv_to_rgb(h, s, v)
+    r, g, b = int(r * 255), int(g * 255), int(b * 255)
+
+    # Convert RGB back to hex
+    return rgb_to_hex((r, g, b))
+##! AI WRITTEN CODE ENDS HERE        
 
 ##A class for custom buttons
 class Menu_Button(QPushButton):
     
     def __init__(self, text, color, subroutine):
-        super().__init__(text)
-        
+        super().__init__(text)  
         ##Set the button color using QSS
-        self.setStyleSheet(f"background-color: {color}; font-size: 36px; color: black")
+        
+        ##Increase the hue of the color passed in by 0.2
+        hover_color = increase_hue(color, 0.2)
+        
+        
+        self.setStyleSheet(f"""
+        QPushButton {{
+            color: black;
+            background-color: {color}; 
+            border: 1px solid black;
+            font-size: 36px;
+        }}
+        QPushButton:hover {{
+            background-color: {hover_color};
+        }}
+        """)
         
         ##The button runs the subroutine passed as an argument
         self.clicked.connect(subroutine)
@@ -237,7 +283,8 @@ class Menu_Button(QPushButton):
         ##Sets the button to fit the container it was placed in
         self.setSizePolicy(
         QSizePolicy.Policy.MinimumExpanding,
-        QSizePolicy.Policy.MinimumExpanding)
+        QSizePolicy.Policy.MinimumExpanding)    
+
 
 ##A class to create a confirmation dialogue
 class Conf_Dialogue(QDialog):
