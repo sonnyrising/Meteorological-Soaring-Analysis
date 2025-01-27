@@ -38,7 +38,8 @@ class MainWindow(QMainWindow):
         ##Inherits from QMainWindow, the window class from the PyQt library
         super().__init__()
 
-        self.setWindowTitle("Meteorological Soaring Analysis")    
+        self.setWindowTitle("Meteorological Soaring Analysis")
+        self.setWindowIcon(QIcon("logo.png"))    
         
         ##Horizontal layout            
         hLayout = QHBoxLayout()
