@@ -124,30 +124,43 @@ class MainWindow(QMainWindow):
         MainWidget = QWidget()
         MainWidget.setLayout(hLayout)
         
+        
         ##Create a vertical box layout that will hold the title as its first box
         ##and the rest of the window as the second, lower box
         titleLayout = QVBoxLayout()
         
-        ##Create a horizontal box layout to contain the title and logo
+        # Create a container widget for the title and logo
+        title_logo_container = QWidget()
+        ##Set the container to be blue
+        title_logo_container.setStyleSheet("background-color: #95d1ff;")
+        
+        ##Create a horizontal layout for the title and logo
         title_logo_layout = QHBoxLayout()
+        
+        ##Set the layout of the container to the horizontal layout
+        title_logo_container.setLayout(title_logo_layout)
         
         ##Instantiates the title class, passing in the text as a parameter
         title_logo_layout.addWidget(Title("Meteorological Soaring Analysis"))
         
-        ##Add the logo to the horizontal layout
+        ##Instantiates the image button class, passing in the image path and the subroutine to run
         title_logo_layout.addWidget(Image_Button("logo.png", self.test))
         
+        ##Set the title to take up 90% of the window
+        title_logo_layout.setStretch(0,9)
+        ##Set the logo to take up 10% of the window
+        title_logo_layout.setStretch(1,1)
+        
         ##Add the title and logo to the top of the window
-        titleLayout.addLayout(title_logo_layout)
+        titleLayout.addWidget(title_logo_container)
         
         ##Adds the main widget (containing buttons etc) below the title
-        titleLayout.addWidget(MainWidget)
-        
+        titleLayout.addWidget(MainWidget)        
         ##With the main widget added, the title layout can be considered to be the main
         ##(and only) layout
         mainLayout = titleLayout
         
-        ##Set the white top widget (0th index) to take up 10% of the window
+        ##Set the top widget (0th index) to take up 10% of the window
         titleLayout.setStretch(0,1)
         ##Therefore the 1st index must take up 90%
         titleLayout.setStretch(1,9)
@@ -337,7 +350,7 @@ class Image_Button(QPushButton):
         self.setIconSize(QSize(100,100))
         self.clicked.connect(self.subroutine)
         self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding)
-    
+        self.setStyleSheet("background-color: ; border: none;")
 
         
         
