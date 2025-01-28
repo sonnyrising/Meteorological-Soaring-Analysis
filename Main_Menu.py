@@ -7,7 +7,6 @@ from Custom_UI_Elements import (
     Image_Button,
     Conf_Dialogue,
     Title,
-    Color,
 )
     
 from PyQt6.QtCore import Qt
@@ -21,26 +20,11 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QSizePolicy,
     QScrollArea,
-    QDialog,
-    QDialogButtonBox,
-    QMessageBox
-    
-    
 )
 from PyQt6.QtGui import (
-    QPalette,
-    QColor,
     QIcon,
-    QPixmap,
 
-    
 )
-from PyQt6.QtCore import (
-    QSize,
-    
-)
-
-
 
 class MainWindow(QMainWindow):
 
@@ -81,7 +65,6 @@ class MainWindow(QMainWindow):
         vLayout.setStretch(1,1)
         vLayout.setStretch(2,1)
         vLayout.setStretch(3,1)
-        
         
         ##Adds the vertical layout as a widget to the horizontal layout
         hLayout.addLayout( vLayout )
@@ -127,14 +110,13 @@ class MainWindow(QMainWindow):
             self.closeButton.show()
 
         ##Set the "button" area of the window (0th index) to take up 30% of the horizontal window space
-        hLayout.setStretch(0, 3)
+        hLayout.setStretch(0, 2)
         ##Therefore set the 1st index area of the window to take up 70% of the horizontal window space
-        hLayout.setStretch(1,7)
+        hLayout.setStretch(1,8)
         
         ##Instantiate both layouts as a widget
         MainWidget = QWidget()
         MainWidget.setLayout(hLayout)
-        
         
         ##Create a vertical box layout that will hold the title as its first box
         ##and the rest of the window as the second, lower box
@@ -147,6 +129,8 @@ class MainWindow(QMainWindow):
         
         ##Create a horizontal layout for the title and logo
         title_logo_layout = QHBoxLayout()
+        title_logo_layout.setContentsMargins(5,5,5,5)
+        title_logo_layout.setSpacing(0)
         
         ##Set the layout of the container to the horizontal layout
         title_logo_container.setLayout(title_logo_layout)
@@ -155,12 +139,18 @@ class MainWindow(QMainWindow):
         title_logo_layout.addWidget(Title("Meteorological Soaring Analysis"))
         
         ##Instantiates the image button class, passing in the image path and the subroutine to run
-        title_logo_layout.addWidget(Image_Button("logo.png", self.test))
+        logo_button = Image_Button("logo.png", self.test)
+        # Limit the logo size
+        logo_button.setFixedSize(140, 100)
+        title_logo_layout.addWidget(logo_button)
         
         ##Set the title to take up 90% of the window
         title_logo_layout.setStretch(0,9)
         ##Set the logo to take up 10% of the window
         title_logo_layout.setStretch(1,1)
+        
+        ##Set the maximum height of the title and logo container
+        title_logo_container.setMaximumHeight(100)
         
         ##Add the title and logo to the top of the window
         titleLayout.addWidget(title_logo_container)
@@ -174,7 +164,7 @@ class MainWindow(QMainWindow):
         ##Set the top widget (0th index) to take up 10% of the window
         titleLayout.setStretch(0,1)
         ##Therefore the 1st index must take up 90%
-        titleLayout.setStretch(1,9)
+        titleLayout.setStretch(1,29)
         
         ##Instantiates a widget to contain the layouts
         WindowWidget = QWidget()
@@ -218,36 +208,6 @@ class MainWindow(QMainWindow):
         self.info_shown = True
         info_doc.close()
         
-        
-##!AI WRITTEN CODE STARTS HERE
-##Converts the hex value passed to the button class into RGB
-def hex_to_rgb(hex_color):
-    hex_color = hex_color.lstrip('#')
-    return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
-
-##Converts the RGB value created by the hex_to_rgb function back into hex
-def rgb_to_hex(rgb_color):
-    return '#{:02x}{:02x}{:02x}'.format(*rgb_color)
-
-##Increases the hue of the color passed in by a given increment
-def increase_hue(hex_color, increment):
-    # Convert hex to RGB
-    r, g, b = hex_to_rgb(hex_color)
-
-    # Convert RGB to HSV
-    h, s, v = colorsys.rgb_to_hsv(r/255.0, g/255.0, b/255.0)
-
-    # Increase the hue
-    h = (h + increment) % 1.0
-
-    # Convert HSV back to RGB
-    r, g, b = colorsys.hsv_to_rgb(h, s, v)
-    r, g, b = int(r * 255), int(g * 255), int(b * 255)
-
-    # Convert RGB back to hex
-    return rgb_to_hex((r, g, b))
-##! AI WRITTEN CODE ENDS HERE        
-
 
 ##Instantiate a QtApplication
 app = QApplication(sys.argv)

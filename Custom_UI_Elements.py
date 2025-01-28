@@ -1,4 +1,6 @@
 ##Import the necessary libraries
+import colorsys
+
 from PyQt6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
@@ -98,7 +100,7 @@ class Title(QLabel):
         
         ##Use QSS (A form of CSS) to style the title text
         self.setStyleSheet("""color: black;
-                           font-size: 64px;
+                           font-size: 48px;
                            font-family: calibri;
                            """)
         
@@ -131,4 +133,33 @@ class Menu_Button(QPushButton):
         ##Sets the button to fit the container it was placed in
         self.setSizePolicy(
         QSizePolicy.Policy.MinimumExpanding,
-        QSizePolicy.Policy.MinimumExpanding)    
+        QSizePolicy.Policy.MinimumExpanding)
+        
+##!AI WRITTEN CODE STARTS HERE
+##Converts the hex value passed to the button class into RGB
+def hex_to_rgb(hex_color):
+    hex_color = hex_color.lstrip('#')
+    return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+
+##Converts the RGB value created by the hex_to_rgb function back into hex
+def rgb_to_hex(rgb_color):
+    return '#{:02x}{:02x}{:02x}'.format(*rgb_color)
+
+##Increases the hue of the color passed in by a given increment
+def increase_hue(hex_color, increment):
+    # Convert hex to RGB
+    r, g, b = hex_to_rgb(hex_color)
+
+    # Convert RGB to HSV
+    h, s, v = colorsys.rgb_to_hsv(r/255.0, g/255.0, b/255.0)
+
+    # Increase the hue
+    h = (h + increment) % 1.0
+
+    # Convert HSV back to RGB
+    r, g, b = colorsys.hsv_to_rgb(h, s, v)
+    r, g, b = int(r * 255), int(g * 255), int(b * 255)
+
+    # Convert RGB back to hex
+    return rgb_to_hex((r, g, b))
+##! AI WRITTEN CODE ENDS HERE     
