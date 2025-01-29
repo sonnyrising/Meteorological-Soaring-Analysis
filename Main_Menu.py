@@ -1,5 +1,4 @@
 import sys
-import colorsys
 
 ##Import classes from my own custom UI Elements
 from Custom_UI_Elements import (
