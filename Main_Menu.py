@@ -54,7 +54,7 @@ class MainWindow(QMainWindow):
         ##* The second layout must be fully defined before it is adde to the first layout
         vLayout.addWidget(Menu_Button(text = 'View Data',
                                       color = '#7ED941',
-                                      subroutine = self.test))
+                                      subroutine = self.view_data))
         vLayout.addWidget(Menu_Button(text = 'Run Analysis',
                                       color = '#7ED941',
                                       subroutine = self.test))
@@ -185,6 +185,13 @@ class MainWindow(QMainWindow):
         self.info_widget.setText("")
         self.closeButton.hide()
         self.info_shown = False
+        
+    def view_data(self):
+        import View_Data
+        self.view_data_window = View_Data.View_Data_Window()
+        self.view_data_window.showMaximized()
+        self.close()
+        
         
     def quit(self):
         ##Create a dialogue box for quit confirmation
