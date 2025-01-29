@@ -54,7 +54,7 @@ class View_Data_Window(QMainWindow):
         ##Instantiates the image button class, passing in the image path and the subroutine to run
         logo_button = Image_Button("logo.png", self.test)
         # Limit the logo size
-        logo_button.setFixedSize(140, 100)
+        logo_button.setFixedSize(45, 30)
         title_logo_layout.addWidget(logo_button)
         
         # Set the title to take up 10% of the window width
@@ -63,10 +63,34 @@ class View_Data_Window(QMainWindow):
         title_logo_layout.setStretch(1, 9)
         
          ##Set the maximum height of the title and logo container
-        title_logo_container.setMaximumHeight(100)
+        title_logo_container.setMaximumHeight(50)
+    
+        ##Create a vertical box layout that will hold the title as its first box
+        ##and the rest of the window as the second, lower box
+        topLayout = QVBoxLayout()
         
-        # Add the title and logo container to the top of the window
-        titleLayout.addWidget(title_logo_container)
+        # Create a container widget for the title and logo
+        top_container = QWidget()
+        
+        ##Set the container to be blue
+        top_container.setStyleSheet("background-color: #95d1ff;")
+        
+        # Create a horizontal layout for the title and logo
+        topLayout = QVBoxLayout()
+        topLayout.setContentsMargins(5,5,5,5)
+        topLayout.setSpacing(0)
+        
+        titleLayout.addLayout(topLayout)
+        
+        topLayout.addWidget(title_logo_container)
+        
+        subtitle = Title("View Data")
+        subtitle.setMaximumHeight(50)
+        topLayout.addWidget(subtitle)
+        
+        
+        
+        
         
         # Add the main widget (containing buttons etc) below the title
         titleLayout.addWidget(QLabel("Main content here"))
@@ -80,11 +104,11 @@ class View_Data_Window(QMainWindow):
     def test(self):
         print("Test")
 
-##Instantiate a QtApplication
-app = QApplication(sys.argv)
-##Set the active window to the main window we have been working with
-window = View_Data_Window()
-##Open the window maximized (Windowed FullScreen)
-window.showMaximized()
-##Run the application
-sys.exit(app.exec())
+# ##Instantiate a QtApplication
+# app = QApplication(sys.argv)
+# ##Set the active window to the main window we have been working with
+# window = View_Data_Window()
+# ##Open the window maximized (Windowed FullScreen)
+# window.showMaximized()
+# ##Run the application
+# sys.exit(app.exec())
