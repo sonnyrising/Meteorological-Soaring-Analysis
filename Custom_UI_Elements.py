@@ -100,10 +100,35 @@ class Title(QLabel):
         
         ##Use QSS (A form of CSS) to style the title text
         self.setStyleSheet("""color: black;
-                           font-size: 48px;
+                           font-size: 42px;
                            font-family: calibri;
                            """)
         
+##Same as title but smaller font size
+class SubTitle(QLabel):
+    
+    def __init__(self, text):
+        super().__init__()
+        
+        ##Create a QLable (textbox) holding the title of the window
+        ##*This is a form of a widget, like the coloured widgets
+        titleLabel = QLabel(text)
+        self.setText(text)
+        
+        ##Set the background color of the QLabel
+        self.setAutoFillBackground(True)
+        palette = titleLabel.palette()
+        palette.setColor(QPalette.ColorRole.Window, QColor(149, 209, 255))
+        self.setPalette(palette)
+        
+        ##Allign the text to the centre of the QLabel
+        self.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        ##Use QSS (A form of CSS) to style the title text
+        self.setStyleSheet("""color: black;
+                           font-size: 36px;
+                           font-family: calibri;
+                           """)
 ##A class for custom buttons
 class Menu_Button(QPushButton):
     

@@ -6,6 +6,7 @@ from Custom_UI_Elements import (
     Image_Button,
     Conf_Dialogue,
     Title,
+    SubTitle,
 )
 
 from PyQt6.QtWidgets import (
@@ -30,79 +31,75 @@ class View_Data_Window(QMainWindow):
         ##Instantiate both layouts as a widget
         MainWidget = QWidget()
         
-        ##Create a vertical box layout that will hold the title as its first box
-        ##and the rest of the window as the second, lower box
-        titleLayout = QVBoxLayout()
+        ##Creates the title bar using the custom title class
+        title_bar = Title("Meterological Soaring Analysis")
+        title_bar.setMaximumHeight(70)
         
-        # Create a container widget for the title and logo
-        title_logo_container = QWidget()
+        ##Creates the subtitle bar using the custom subtitle class
+        ##Slightly smaller than the title bar
+        subtitle_bar = SubTitle("View Data")
+        subtitle_bar.setMaximumHeight(30)
         
-        ##Set the container to be blue
-        title_logo_container.setStyleSheet("background-color: #95d1ff;")
+        ##Creates a blue background to hold the title and subtitle
+        title_widget = QWidget()
+        title_widget.setStyleSheet("background-color: #95d1ff;")
         
-        # Create a horizontal layout for the title and logo
-        title_logo_layout = QHBoxLayout()
-        title_logo_layout.setContentsMargins(5,5,5,5)
-        title_logo_layout.setSpacing(0)
+        title_layout = QVBoxLayout()
+        title_layout.addWidget(title_bar)
+        title_layout.addWidget(subtitle_bar)
         
-        # Set the layout for the container
-        title_logo_container.setLayout(title_logo_layout)
+        title_widget.setLayout(title_layout)
         
-        ##Instantiates the title class, passing in the text as a parameter
-        title_logo_layout.addWidget(Title("Meteorological Soaring Analysis"))
+        ##Set a maximum height for the title and subtitle widget
+        title_widget.setMaximumHeight(100)
         
-        ##Instantiates the image button class, passing in the image path and the subroutine to run
-        logo_button = Image_Button("logo.png", self.test)
-        # Limit the logo size
-        logo_button.setFixedSize(45, 30)
-        title_logo_layout.addWidget(logo_button)
+        ##Creates a background for the title and subtitle and logo
+        top_bar = QWidget()
+        top_bar.setStyleSheet("background-color: #95d1ff;")
         
-        # Set the title to take up 10% of the window width
-        title_logo_layout.setStretch(0, 1)
-        # Set the logo to take up 90% of the window width
-        title_logo_layout.setStretch(1, 9)
-        
-         ##Set the maximum height of the title and logo container
-        title_logo_container.setMaximumHeight(50)
+        top_layout = QHBoxLayout()
     
-        ##Create a vertical box layout that will hold the title as its first box
-        ##and the rest of the window as the second, lower box
-        topLayout = QVBoxLayout()
+        ##Creates a logo button using the custom image button class
+        logo_button = Image_Button("logo.png", self.logo_clicked)
+        logo_button.setFixedSize(145, 90)
         
-        # Create a container widget for the title and logo
-        top_container = QWidget()
+        ##Adds the subtitle and title bar to the logo as a horizontal layout
+        top_layout.addWidget(title_widget)
+        top_layout.addWidget(logo_button)
         
-        ##Set the container to be blue
-        top_container.setStyleSheet("background-color: #95d1ff;")
+        top_bar.setLayout(top_layout)
         
-        # Create a horizontal layout for the title and logo
-        topLayout = QVBoxLayout()
-        topLayout.setContentsMargins(5,5,5,5)
-        topLayout.setSpacing(0)
-        
-        titleLayout.addLayout(topLayout)
-        
-        topLayout.addWidget(title_logo_container)
-        
-        subtitle = Title("View Data")
-        subtitle.setMaximumHeight(50)
-        topLayout.addWidget(subtitle)
-        
-        
-        
-        
+        main_layout = QVBoxLayout()
+        main_layout.addWidget(top_bar)
         
         # Add the main widget (containing buttons etc) below the title
-        titleLayout.addWidget(QLabel("Main content here"))
+        main_layout.addWidget(QLabel("Main content here"))
+        
+        main_layout.setStretch(0,1)
+        main_layout.setStretch(1,29)
         
         # Set the layout for the main widget
-        MainWidget.setLayout(titleLayout)
+        MainWidget.setLayout(main_layout)
         
         # Set the main widget as the central widget of the main window
         self.setCentralWidget(MainWidget)
 
-    def test(self):
-        print("Test")
+    def logo_clicked(self):
+        ##Create a dialogue box for quit to main menu confirmation
+        ##Parameter 1 is the window title
+        ##Parameter 2 is the statement in the dialogue box
+        quitDialogue = Conf_Dialogue("Quit to Menu",
+                                     "Are you sure you want to quit to the Main Menu?"
+                                )
+        if quitDialogue.exec():
+            ##If the user clicks yes in the dialogue box, the application will quit
+            import Main_Menu
+            self.mainWindow = Main_Menu.MainWindow()
+            self.mainWindow.showMaximized()
+            self.close()
+        else:
+            ##If the user clicks cancel in the dialogue box, the application will continue running
+            print("Cancel")
 
 # ##Instantiate a QtApplication
 # app = QApplication(sys.argv)
