@@ -26,9 +26,6 @@ from PyQt6.QtCore import (
     QDate,
 )
 
-global standard_subtitle_size
-standard_subtitle_size = QSize(150, 50)
-
 ##A class to create a confirmation dialogue
 class Conf_Dialogue(QDialog):
     def __init__(self, title, statement):
@@ -208,11 +205,11 @@ class data_options(QWidget):
         graph_widget = QWidget()
         graph_widget.setStyleSheet("background-color: transparent;")
         graph_layout = QVBoxLayout()
-        graph_layout.setSpacing(10)
+        graph_layout.setSpacing(5)
         
         ##Create a subtitle indicating these inputs are for graph A
         graph_title = SubTitle(title, 48)
-        graph_title.setMaximumSize(standard_subtitle_size)
+        graph_title.setMaximumSize(50, 100)
         graph_title.setStyleSheet("background-color: purple;")
         graph_title.setAlignment(Qt.AlignmentFlag.AlignLeft)
         
@@ -245,8 +242,8 @@ class date_input(QWidget):
         date_input_layout = QVBoxLayout()
         date_input_layout.setSpacing(10)
         
-        subtitle = SubTitle(title, 24)
-        subtitle.setMaximumSize(standard_subtitle_size)
+        subtitle = SubTitle(title, 18)
+        subtitle.setMaximumSize(150, 50)
         ##Create a widget for user to enter start date
         date_input = QDateEdit(self)
         ##The data starts at 01/01/2010 so don't allow dates before this
@@ -256,7 +253,7 @@ class date_input(QWidget):
         ##Set geometry of the date edit
         date_input.setMaximumSize(150,50)
         ##Set the styling of the date input
-        date_input.setStyleSheet("font-size: 16px;")
+        date_input.setStyleSheet("font-size: 14px;")
         
         ##Add the subtitle and date input to the layout
         date_input_layout.addWidget(subtitle)
@@ -302,17 +299,17 @@ class drop_down_menu(QWidget):
         drop_down_layout.setSpacing(10)
         
         ##Create a subtitle for the drop down menu
-        subtitle = SubTitle(title, 24)
-        subtitle.setMaximumSize(standard_subtitle_size)
+        subtitle = SubTitle(title, 18)
+        subtitle.setMaximumSize(150, 50)
         
         ##Create a drop down menu
         drop_down = QComboBox()
         ##Add the options to the drop down menu
         drop_down.addItems(drop_down_options)
         ##Set the dimensions of the drop down
-        drop_down.setMaximumSize(225,50)
+        drop_down.setMaximumSize(225, 50)
         ##Set the styling of the drop down
-        drop_down.setStyleSheet("font-size: 16px;")
+        drop_down.setStyleSheet("font-size: 14px;")
         
         ##Add the subtitle and drop down menu to the layout
         drop_down_layout.addWidget(subtitle)

@@ -34,7 +34,7 @@ class View_Data_Window(QMainWindow):
         
         ##Creates the title bar using the custom title class
         title_bar = Title("Meterological Soaring Analysis")
-        title_bar.setMaximumHeight(70)
+        title_bar.setMaximumHeight(60)
         
         ##Creates the subtitle bar using the custom subtitle class
         ##Slightly smaller than the title bar
@@ -70,12 +70,14 @@ class View_Data_Window(QMainWindow):
         
         top_bar.setLayout(top_layout)
         
+        top_bar.setMaximumHeight(100)
+        
         main_layout = QVBoxLayout()
         main_layout.addWidget(top_bar)
         
         ##Add the user inputs for each graph
-        main_layout.addWidget(data_options("Graph A:"))
-        main_layout.addWidget(data_options("Graph B:"))
+        main_layout.addWidget(data_options("Line A:"))
+        main_layout.addWidget(data_options("Line B:"))
         
         ##Add a button to create the graph
         plot_button = Menu_Button(
@@ -83,10 +85,13 @@ class View_Data_Window(QMainWindow):
             color = '#7ED941',
             subroutine = self.test
         )
+        plot_button.setMaximumSize(200, 30)
         main_layout.addWidget(plot_button)
         
         main_layout.setStretch(0,1)
-        main_layout.setStretch(1,29)
+        main_layout.setStretch(1,12)
+        main_layout.setStretch(2,2)
+        main_layout.setSpacing(5)
         
         ##Set the layout for the main widget
         MainWidget.setLayout(main_layout)
@@ -113,11 +118,11 @@ class View_Data_Window(QMainWindow):
     def test(self):
         print("Test")
 
-# ##Instantiate a QtApplication
-# app = QApplication(sys.argv)
-# ##Set the active window to the main window we have been working with
-# window = View_Data_Window()
-# ##Open the window maximized (Windowed FullScreen)
-# window.showMaximized()
-# ##Run the application
-# sys.exit(app.exec())
+##Instantiate a QtApplication
+app = QApplication(sys.argv)
+##Set the active window to the main window we have been working with
+window = View_Data_Window()
+##Open the window maximized (Windowed FullScreen)
+window.showMaximized()
+##Run the application
+sys.exit(app.exec())
