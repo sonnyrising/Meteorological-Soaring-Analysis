@@ -8,7 +8,10 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QPushButton,
     QSizePolicy,
-    QWidget
+    QWidget,
+    QDateEdit,
+    QComboBox,
+
 )
 from PyQt6.QtGui import ( 
     QIcon,
@@ -20,7 +23,11 @@ from PyQt6.QtGui import (
 from PyQt6.QtCore import (
     Qt,
     QSize,
+    QDate,
 )
+
+global standard_subtitle_size
+standard_subtitle_size = QSize(150, 50)
 
 ##A class to create a confirmation dialogue
 class Conf_Dialogue(QDialog):
@@ -107,7 +114,7 @@ class Title(QLabel):
 ##Same as title but smaller font size
 class SubTitle(QLabel):
     
-    def __init__(self, text):
+    def __init__(self, text, font_size):
         super().__init__()
         
         ##Create a QLable (textbox) holding the title of the window
@@ -125,8 +132,8 @@ class SubTitle(QLabel):
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         ##Use QSS (A form of CSS) to style the title text
-        self.setStyleSheet("""color: black;
-                           font-size: 36px;
+        self.setStyleSheet(f"""color: black;
+                           font-size: {font_size}px;
                            font-family: calibri;
                            """)
 ##A class for custom buttons
@@ -187,4 +194,140 @@ def increase_hue(hex_color, increment):
 
     # Convert RGB back to hex
     return rgb_to_hex((r, g, b))
-##! AI WRITTEN CODE ENDS HERE     
+##! AI WRITTEN CODE ENDS HERE
+
+class data_options(QWidget):
+    def __init__(self, title):
+        super().__init__()
+        
+        ##Create a layout for the data options
+        layout = QVBoxLayout()
+        layout.setSpacing(0)
+
+        ##Create a widget to contain the inputs for graph A
+        graph_widget = QWidget()
+        graph_widget.setStyleSheet("background-color: transparent;")
+        graph_layout = QVBoxLayout()
+        graph_layout.setSpacing(10)
+        
+        ##Create a subtitle indicating these inputs are for graph A
+        graph_title = SubTitle(title, 48)
+        graph_title.setMaximumSize(standard_subtitle_size)
+        graph_title.setStyleSheet("background-color: purple;")
+        graph_title.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        
+        start_input = date_input("start")
+        end_input = date_input("end")
+        
+        graph_layout.addWidget(graph_title)
+        graph_layout.addWidget(start_input)
+        graph_layout.addWidget(end_input)
+        graph_layout.addWidget(drop_down_menu("region"))
+        graph_layout.addWidget(drop_down_menu("condition"))
+
+        ##Set the layout for the widget
+        self.setLayout(graph_layout)
+
+##A custom date input widget which adds the relevant subtitle
+class date_input(QWidget):
+    def __init__(self, start_end):
+        super().__init__()
+        
+        ##Signal if this date input is for the start or end date
+        if start_end == "start":
+            title = "Start Date"
+        elif start_end == "end":
+            title = "End Date"
+        else:
+            print ("Incorrect start/end parameter")
+            
+        ##Create a layout to contain the date input
+        date_input_layout = QVBoxLayout()
+        date_input_layout.setSpacing(10)
+        
+        subtitle = SubTitle(title, 24)
+        subtitle.setMaximumSize(standard_subtitle_size)
+        ##Create a widget for user to enter start date
+        date_input = QDateEdit(self)
+        ##The data starts at 01/01/2010 so don't allow dates before this
+        date_input.setMinimumDate(QDate(2010, 1, 1))
+        ##The data ends at 31/12/2024 so don't allow dates after this
+        date_input.setMaximumDate(QDate(2024, 12, 31))
+        ##Set geometry of the date edit
+        date_input.setMaximumSize(150,50)
+        ##Set the styling of the date input
+        date_input.setStyleSheet("font-size: 16px;")
+        
+        ##Add the subtitle and date input to the layout
+        date_input_layout.addWidget(subtitle)
+        date_input_layout.addWidget(date_input)
+        
+        ##Set the layout for the widget
+        self.setLayout(date_input_layout)
+        
+    def getDate(self):
+        return self.date_input.date()
+
+##A custom drop down menu widget which adds the relevant subtitle
+class drop_down_menu(QWidget):
+    def __init__(self, region_condition):
+        
+        super().__init__()
+        
+        ##Import the python file storing drop down options
+        from Drop_Down_Options import options
+        
+        ##Create an instance of the options class to take the options from
+        options = options()
+        
+        ##Create a list of regions and their corresponding gliding clubs
+        region_glidingClub = []
+        ##Iterate through the regions and append the corresponding gliding club to the string
+        for i in range(len(options.regions)):
+            region_glidingClub.append(options.regions[i] + " - " + options.gliding_clubs[i])
+            
+        ##Signal whether this drop down if for region or condition
+        if region_condition == "region":
+            title = "Region:"
+            drop_down_options = region_glidingClub
+        elif region_condition == "condition":
+            title = "Condition:"
+            drop_down_options = options.conditions
+        else:
+            print("Incorrect region_condition parameter")
+        
+
+        ##Create a layout to contain the drop down menu
+        drop_down_layout = QVBoxLayout()
+        drop_down_layout.setSpacing(10)
+        
+        ##Create a subtitle for the drop down menu
+        subtitle = SubTitle(title, 24)
+        subtitle.setMaximumSize(standard_subtitle_size)
+        
+        ##Create a drop down menu
+        drop_down = QComboBox()
+        ##Add the options to the drop down menu
+        drop_down.addItems(drop_down_options)
+        ##Set the dimensions of the drop down
+        drop_down.setMaximumSize(225,50)
+        ##Set the styling of the drop down
+        drop_down.setStyleSheet("font-size: 16px;")
+        
+        ##Add the subtitle and drop down menu to the layout
+        drop_down_layout.addWidget(subtitle)
+        drop_down_layout.addWidget(drop_down)
+        
+        ##Set the layout for the widget
+        self.setLayout(drop_down_layout)
+        
+    def getOption(self):
+        return self.drop_down.currentText()
+
+        
+        
+        
+    
+        
+        
+        

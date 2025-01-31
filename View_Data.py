@@ -7,6 +7,7 @@ from Custom_UI_Elements import (
     Conf_Dialogue,
     Title,
     SubTitle,
+    data_options
 )
 
 from PyQt6.QtWidgets import (
@@ -37,7 +38,7 @@ class View_Data_Window(QMainWindow):
         
         ##Creates the subtitle bar using the custom subtitle class
         ##Slightly smaller than the title bar
-        subtitle_bar = SubTitle("View Data")
+        subtitle_bar = SubTitle("View Data", 36)
         subtitle_bar.setMaximumHeight(30)
         
         ##Creates a blue background to hold the title and subtitle
@@ -72,16 +73,25 @@ class View_Data_Window(QMainWindow):
         main_layout = QVBoxLayout()
         main_layout.addWidget(top_bar)
         
-        # Add the main widget (containing buttons etc) below the title
-        main_layout.addWidget(QLabel("Main content here"))
+        ##Add the user inputs for each graph
+        main_layout.addWidget(data_options("Graph A:"))
+        main_layout.addWidget(data_options("Graph B:"))
+        
+        ##Add a button to create the graph
+        plot_button = Menu_Button(
+            text = 'Plot Graph',
+            color = '#7ED941',
+            subroutine = self.test
+        )
+        main_layout.addWidget(plot_button)
         
         main_layout.setStretch(0,1)
         main_layout.setStretch(1,29)
         
-        # Set the layout for the main widget
+        ##Set the layout for the main widget
         MainWidget.setLayout(main_layout)
         
-        # Set the main widget as the central widget of the main window
+        ##Set the main widget as the central widget of the main window
         self.setCentralWidget(MainWidget)
 
     def logo_clicked(self):
@@ -100,6 +110,8 @@ class View_Data_Window(QMainWindow):
         else:
             ##If the user clicks cancel in the dialogue box, the application will continue running
             print("Cancel")
+    def test(self):
+        print("Test")
 
 # ##Instantiate a QtApplication
 # app = QApplication(sys.argv)
