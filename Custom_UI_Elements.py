@@ -229,12 +229,12 @@ class data_options(QWidget):
      
     ##A getter method to retrieve the inputs from the data options widget  
     def getInputs(self):
-        return [
-            self.start_input.getDate(), 
-            self.end_input.getDate(), 
-            self.region_input.getOption(), 
-            self.condition_input.getOption(),
-            ]
+        return {
+            "start_date" : self.start_input.getDate(), 
+            "end_date" : self.end_input.getDate(), 
+            "region" : self.region_input.getOption(), 
+            "condition" : self.condition_input.getOption(),
+        }
 
 ##A custom date input widget which adds the relevant subtitle
 class date_input(QWidget):

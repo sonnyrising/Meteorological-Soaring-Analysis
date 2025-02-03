@@ -126,19 +126,34 @@ class View_Data_Window(QMainWindow):
     def plot_graph(self):
         
         ##Use the getter method from the data options to retrieve user inputs
+        ##A dictionary is returned with the keys being the input type
         inputsA = self.data_options_A.getInputs()
         inputsB = self.data_options_A.getInputs()
         
+        ##Extracts start and end dates from the dictionary
+        start_dates = [inputsA['start_date'], inputsB['start_date']]
+        end_dates = [inputsA['end_date'], inputsB['end_date']]
+        
         ##Create an instance of input validation to the current inputs
-        input_validation = inputValidation(self.data_options_A.getInputs(), self.data_options_A.getInputs())
-        if input_validation.validateDate() == True:
-            print("Validated")
-        elif input_validation.validateDate() == "start_date before end_date":
-            print("start_date before end_date")
-        elif input_validation.validateDate() == "end_date before start_date":
-            print("end_date before start_date")
-        else:
-            print("Error")
+        ##Repeated twice to check graph A and B
+        for i in range (0,1):
+            input_validation = inputValidation(start_dates[i], end_dates[i])
+            if input_validation.validateDate() == True:
+                print("Validated")
+            elif input_validation.validateDate() == "end_date before start_date":
+                print("end_date before start_date")
+                if i == 0:
+                    print("Error graph A")
+                else:
+                    print("Error graph B")
+            elif input_validation.validateDate() == "start_date = end_date":
+                print ("start_date = end_date")
+                if i == 0:
+                    print("Error graph A")
+                else:
+                    print("Error graph B")
+            else:
+                print("Error")
         
         
 ##A class to handle validating user inputs  
@@ -151,19 +166,21 @@ class inputValidation:
         ##Due to the QDateEdit widget, the date is already in the correct format
         ##Minimum and maximum dates are set by the QDateEdit widget so dont need to be validated
         
-        ##Check if the start date is before the end date
-        if self.start_date > self.end_date:
-            ##Return an appropriate error message to trigger a popup
-            return "start_date before end_date"
+        ##Check if dates are in the correct order
+        ##ie cant end before it starts
+        if self.start_date  < self.end_date:
+            return(True)
         
-        ##Check if the end date is before the start date
-        elif self.end_date < self.start_date:
+        ##Check if the start date is before the end date
+        elif self.start_date > self.end_date:
             ##Return an appropriate error message to trigger a popup
             return "end_date before start_date"
         
+        ##Check if the start date is the same as the end date
         else:
-            ##All validation passed
-            return(True)
+            return "start_date = end_date"
+        
+
         
         
 
