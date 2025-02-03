@@ -209,21 +209,32 @@ class data_options(QWidget):
         
         ##Create a subtitle indicating these inputs are for graph A
         graph_title = SubTitle(title, 48)
-        graph_title.setMaximumSize(50, 100)
+        graph_title.setMaximumSize(60, 100)
         graph_title.setStyleSheet("background-color: purple;")
         graph_title.setAlignment(Qt.AlignmentFlag.AlignLeft)
         
-        start_input = date_input("start")
-        end_input = date_input("end")
+        self.start_input = date_input("start")
+        self.end_input = date_input("end")
+        self.region_input = drop_down_menu("region")
+        self.condition_input = drop_down_menu("condition")
         
         graph_layout.addWidget(graph_title)
-        graph_layout.addWidget(start_input)
-        graph_layout.addWidget(end_input)
-        graph_layout.addWidget(drop_down_menu("region"))
-        graph_layout.addWidget(drop_down_menu("condition"))
+        graph_layout.addWidget(self.start_input)
+        graph_layout.addWidget(self.end_input)
+        graph_layout.addWidget(self.region_input)
+        graph_layout.addWidget(self.condition_input)
 
         ##Set the layout for the widget
         self.setLayout(graph_layout)
+     
+    ##A getter method to retrieve the inputs from the data options widget  
+    def getInputs(self):
+        return [
+            self.start_input.getDate(), 
+            self.end_input.getDate(), 
+            self.region_input.getOption(), 
+            self.condition_input.getOption(),
+            ]
 
 ##A custom date input widget which adds the relevant subtitle
 class date_input(QWidget):
@@ -243,21 +254,21 @@ class date_input(QWidget):
         date_input_layout.setSpacing(10)
         
         subtitle = SubTitle(title, 18)
-        subtitle.setMaximumSize(150, 50)
+        subtitle.setMaximumSize(225, 60)
         ##Create a widget for user to enter start date
-        date_input = QDateEdit(self)
+        self.date_input = QDateEdit(self)
         ##The data starts at 01/01/2010 so don't allow dates before this
-        date_input.setMinimumDate(QDate(2010, 1, 1))
+        self.date_input.setMinimumDate(QDate(2010, 1, 1))
         ##The data ends at 31/12/2024 so don't allow dates after this
-        date_input.setMaximumDate(QDate(2024, 12, 31))
+        self.date_input.setMaximumDate(QDate(2024, 12, 31))
         ##Set geometry of the date edit
-        date_input.setMaximumSize(150,50)
+        self.date_input.setMaximumSize(225,60)
         ##Set the styling of the date input
-        date_input.setStyleSheet("font-size: 14px;")
+        self.date_input.setStyleSheet("font-size: 14px;")
         
         ##Add the subtitle and date input to the layout
         date_input_layout.addWidget(subtitle)
-        date_input_layout.addWidget(date_input)
+        date_input_layout.addWidget(self.date_input)
         
         ##Set the layout for the widget
         self.setLayout(date_input_layout)
@@ -300,20 +311,20 @@ class drop_down_menu(QWidget):
         
         ##Create a subtitle for the drop down menu
         subtitle = SubTitle(title, 18)
-        subtitle.setMaximumSize(150, 50)
+        subtitle.setMaximumSize(225, 60)
         
         ##Create a drop down menu
-        drop_down = QComboBox()
+        self.drop_down = QComboBox()
         ##Add the options to the drop down menu
-        drop_down.addItems(drop_down_options)
+        self.drop_down.addItems(drop_down_options)
         ##Set the dimensions of the drop down
-        drop_down.setMaximumSize(225, 50)
+        self.drop_down.setMaximumSize(225, 60)
         ##Set the styling of the drop down
-        drop_down.setStyleSheet("font-size: 14px;")
+        self.drop_down.setStyleSheet("font-size: 14px;")
         
         ##Add the subtitle and drop down menu to the layout
         drop_down_layout.addWidget(subtitle)
-        drop_down_layout.addWidget(drop_down)
+        drop_down_layout.addWidget(self.drop_down)
         
         ##Set the layout for the widget
         self.setLayout(drop_down_layout)

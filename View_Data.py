@@ -76,15 +76,18 @@ class View_Data_Window(QMainWindow):
         main_layout.addWidget(top_bar)
         
         ##Add the user inputs for each graph
-        main_layout.addWidget(data_options("Line A:"))
-        main_layout.addWidget(data_options("Line B:"))
+        self.data_options_A = data_options("Line A:")
+        self.data_options_B = data_options("Line B:")
+        main_layout.addWidget(self.data_options_A)
+        main_layout.addWidget(self.data_options_B)
         
         ##Add a button to create the graph
         plot_button = Menu_Button(
             text = 'Plot Graph',
             color = '#7ED941',
-            subroutine = self.test
+            subroutine = self.plot_graph
         )
+
         plot_button.setMaximumSize(200, 30)
         main_layout.addWidget(plot_button)
         
@@ -115,8 +118,55 @@ class View_Data_Window(QMainWindow):
         else:
             ##If the user clicks cancel in the dialogue box, the application will continue running
             print("Cancel")
+            
     def test(self):
         print("Test")
+    
+    ##Subroutine called when the plot graph button is clicked
+    def plot_graph(self):
+        
+        ##Use the getter method from the data options to retrieve user inputs
+        inputsA = self.data_options_A.getInputs()
+        inputsB = self.data_options_A.getInputs()
+        
+        ##Create an instance of input validation to the current inputs
+        input_validation = inputValidation(self.data_options_A.getInputs(), self.data_options_A.getInputs())
+        if input_validation.validateDate() == True:
+            print("Validated")
+        elif input_validation.validateDate() == "start_date before end_date":
+            print("start_date before end_date")
+        elif input_validation.validateDate() == "end_date before start_date":
+            print("end_date before start_date")
+        else:
+            print("Error")
+        
+        
+##A class to handle validating user inputs  
+class inputValidation:
+    def __init__(self,start_date, end_date):
+        self.start_date = start_date
+        self.end_date = end_date
+    
+    def validateDate(self):
+        ##Due to the QDateEdit widget, the date is already in the correct format
+        ##Minimum and maximum dates are set by the QDateEdit widget so dont need to be validated
+        
+        ##Check if the start date is before the end date
+        if self.start_date > self.end_date:
+            ##Return an appropriate error message to trigger a popup
+            return "start_date before end_date"
+        
+        ##Check if the end date is before the start date
+        elif self.end_date < self.start_date:
+            ##Return an appropriate error message to trigger a popup
+            return "end_date before start_date"
+        
+        else:
+            ##All validation passed
+            return(True)
+        
+        
+
 
 ##Instantiate a QtApplication
 app = QApplication(sys.argv)
