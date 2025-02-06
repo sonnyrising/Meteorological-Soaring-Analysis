@@ -331,6 +331,31 @@ class drop_down_menu(QWidget):
         
     def getOption(self):
         return self.drop_down.currentText()
+    
+class error_message(QDialog):
+    def __init__(self, error1, error2):
+        super().__init__()
+        
+        self.setWindowTitle("Error")
+        
+        layout = QVBoxLayout()
+        
+        error = QLabel("Error")
+        error.setStyleSheet("font-size:20; color:red")
+        layout.addWidget(error)
+        
+        label1 = QLabel(error1)
+        layout.addWidget(label1)
+        
+        label2 = QLabel(error2)
+        layout.addWidget(label2)
+        
+        close_button = QPushButton("Close")
+        close_button.clicked.connect(self.close)
+        layout.addWidget(close_button)
+        
+        self.setLayout(layout)
+    
 
         
         

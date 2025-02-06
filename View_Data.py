@@ -7,7 +7,8 @@ from Custom_UI_Elements import (
     Conf_Dialogue,
     Title,
     SubTitle,
-    data_options
+    data_options,
+    error_message
 )
 
 from PyQt6.QtWidgets import (
@@ -85,7 +86,7 @@ class View_Data_Window(QMainWindow):
         plot_button = Menu_Button(
             text = 'Plot Graph',
             color = '#7ED941',
-            subroutine = self.plot_graph
+            subroutine = self.validate_data
         )
 
         plot_button.setMaximumSize(200, 30)
@@ -123,37 +124,67 @@ class View_Data_Window(QMainWindow):
         print("Test")
     
     ##Subroutine called when the plot graph button is clicked
-    def plot_graph(self):
+    ##The first step to plotting the graph
+    def validate_data(self):
+        ##A flag to indicate whether inputs have been validated
+        validation_passed = False
         
         ##Use the getter method from the data options to retrieve user inputs
         ##A dictionary is returned with the keys being the input type
         inputsA = self.data_options_A.getInputs()
-        inputsB = self.data_options_A.getInputs()
+        inputsB = self.data_options_B.getInputs()
         
         ##Extracts start and end dates from the dictionary
         start_dates = [inputsA['start_date'], inputsB['start_date']]
         end_dates = [inputsA['end_date'], inputsB['end_date']]
         
-        ##Create an instance of input validation to the current inputs
-        ##Repeated twice to check graph A and B
-        for i in range (0,1):
-            input_validation = inputValidation(start_dates[i], end_dates[i])
-            if input_validation.validateDate() == True:
-                print("Validated")
-            elif input_validation.validateDate() == "end_date before start_date":
-                print("end_date before start_date")
-                if i == 0:
-                    print("Error graph A")
-                else:
-                    print("Error graph B")
-            elif input_validation.validateDate() == "start_date = end_date":
-                print ("start_date = end_date")
-                if i == 0:
-                    print("Error graph A")
-                else:
-                    print("Error graph B")
-            else:
-                print("Error")
+        ##Create an instance of input validation to the current inputs for line A
+        input_validation_A = inputValidation(start_dates[0], end_dates[0])
+        validation_result_A = input_validation_A.validateDate()
+        
+        ##If the validation class returns True, the input is valid
+        if validation_result_A == True:
+            ##Set passe to true
+            validation_passed = True
+            print("Validated")
+        elif validation_result_A == "end_date before start_date":
+            popup = error_message("Error in Line A", "End Date before Start Date")
+            popup.exec()
+            validation_passed = False
+        elif validation_result_A == "start_date = end_date":
+            print ("start_date = end_date")
+            popup = error_message("Error in Line A", "End Date equal to Start Date")
+            popup.exec()
+            validation_passed = False
+        
+        ##Create an instance of input validation to the current inputs for line B
+        input_validation_B = inputValidation(start_dates[1], end_dates[1])
+        validation_result_B = input_validation_B.validateDate()
+
+        if validation_result_B == True:
+            print("Validated")
+            popup = error_message("Graph B Valid", "Passed")
+            popup.exec()
+            validation_passed = True
+        elif validation_result_B == "end_date before start_date":
+            popup = error_message("Error in Line B", "End Date before Start Date")
+            popup.exec()
+            validation_passed = False
+        elif validation_result_B == "start_date = end_date":
+            print ("start_date = end_date")
+            popup = error_message("Error in Line B", "End Date equal to Start Date")
+            popup.exec()
+            validaton_passed = False
+        
+        ##Have the inputs passed validation?
+        if validation_passed == True:
+            self.plot_graph()
+            
+            
+    def plot_graph(self):
+        pass
+        
+                
         
         
 ##A class to handle validating user inputs  
