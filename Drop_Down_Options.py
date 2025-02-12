@@ -24,4 +24,9 @@ class options():
             "Long Mynd",
         ]
         
-        self.conditions = []
+        self.conditions = [
+            "Rain (mm)",
+            "Wind Speed (kts)",
+            "Wind Direction (degrees)",
+            
+        ]

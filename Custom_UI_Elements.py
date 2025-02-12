@@ -26,6 +26,9 @@ from PyQt6.QtCore import (
     QDate,
 )
 
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+from matplotlib.figure import Figure
+
 ##A class to create a confirmation dialogue
 class Conf_Dialogue(QDialog):
     def __init__(self, title, statement):
@@ -213,11 +216,13 @@ class data_options(QWidget):
         graph_title.setStyleSheet("background-color: purple;")
         graph_title.setAlignment(Qt.AlignmentFlag.AlignLeft)
         
+        ##Create instantiations of each user input widget
         self.start_input = date_input("start")
         self.end_input = date_input("end")
         self.region_input = drop_down_menu("region")
         self.condition_input = drop_down_menu("condition")
         
+        #Add each widget to the layout
         graph_layout.addWidget(graph_title)
         graph_layout.addWidget(self.start_input)
         graph_layout.addWidget(self.end_input)
@@ -227,7 +232,8 @@ class data_options(QWidget):
         ##Set the layout for the widget
         self.setLayout(graph_layout)
      
-    ##A getter method to retrieve the inputs from the data options widget  
+    ##A getter method to retrieve the inputs from the data options widget 
+    ##In the form of a dictionary 
     def getInputs(self):
         return {
             "start_date" : self.start_input.getDate(), 
@@ -355,6 +361,23 @@ class error_message(QDialog):
         layout.addWidget(close_button)
         
         self.setLayout(layout)
+
+##A class to contain the graph created by MPL (Matplotlib)
+class MplCanvas(FigureCanvasQTAgg):
+    ##Set the dimensions of the graph
+    def __init__(self, parent = None, width = 5, height = 4, dpi = 100):
+        ##Create an instance of a figure (graph) with the
+        ##Passed dimensions
+        fig = Figure(figsize=(width, height), dpi=dpi)
+        
+        ##Add a subplot
+        ##111 represents 1 row, 1 column, 1st subplot
+        self.axes = fig.add_subplot(111)
+        
+        ##Instantiate the FigureCanvas using the figure we created
+        super().__init__(fig)
+        
+
     
 
         

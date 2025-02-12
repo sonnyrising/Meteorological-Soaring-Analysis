@@ -8,7 +8,8 @@ from Custom_UI_Elements import (
     Title,
     SubTitle,
     data_options,
-    error_message
+    error_message,
+    MplCanvas
 )
 
 from PyQt6.QtWidgets import (
@@ -19,7 +20,11 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QLabel
 )
+
 from PyQt6.QtGui import QIcon
+
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+from matplotlib.figure import Figure
 
 class View_Data_Window(QMainWindow):
 
@@ -73,14 +78,20 @@ class View_Data_Window(QMainWindow):
         
         top_bar.setMaximumHeight(100)
         
+        ##Create a layout for the whole window and add the title bar
         main_layout = QVBoxLayout()
         main_layout.addWidget(top_bar)
+        
+        ##Create a layout for the lower part of the window below the title
+        main_contents_layout = QHBoxLayout()
+        
+        left_third_layout = QVBoxLayout()
         
         ##Add the user inputs for each graph
         self.data_options_A = data_options("Line A:")
         self.data_options_B = data_options("Line B:")
-        main_layout.addWidget(self.data_options_A)
-        main_layout.addWidget(self.data_options_B)
+        left_third_layout.addWidget(self.data_options_A)
+        left_third_layout.addWidget(self.data_options_B)
         
         ##Add a button to create the graph
         plot_button = Menu_Button(
@@ -89,14 +100,27 @@ class View_Data_Window(QMainWindow):
             subroutine = self.validate_data
         )
 
+        ##Set the maximum size of the plot button
         plot_button.setMaximumSize(200, 30)
-        main_layout.addWidget(plot_button)
         
-        main_layout.setStretch(0,1)
-        main_layout.setStretch(1,12)
-        main_layout.setStretch(2,2)
-        main_layout.setSpacing(5)
+        ##Create a layout to hold all of the inputs
+        left_third_layout.addWidget(plot_button)
         
+        ##Add the user inputs held on the left of the screen
+        main_contents_layout.addLayout(left_third_layout)
+        
+
+        
+        
+        # Create the maptlotlib FigureCanvas object,
+        # which defines a single set of axes as self.axes.
+        sc = MplCanvas(self, width=5, height=4, dpi=100)
+        sc.axes.plot([12, 45, 106, 15, 24], [10,1,20,3,40])
+
+        main_contents_layout.addWidget(sc)
+        
+        main_layout.addLayout(main_contents_layout)
+                     
         ##Set the layout for the main widget
         MainWidget.setLayout(main_layout)
         
@@ -144,16 +168,18 @@ class View_Data_Window(QMainWindow):
         
         ##If the validation class returns True, the input is valid
         if validation_result_A == True:
-            ##Set passe to true
+            ##Set passed to true
             validation_passed = True
-            print("Validated")
         elif validation_result_A == "end_date before start_date":
+            ##The end date is before the start date
+            ##Create a popup to inform the user
             popup = error_message("Error in Line A", "End Date before Start Date")
             popup.exec()
             validation_passed = False
         elif validation_result_A == "start_date = end_date":
-            print ("start_date = end_date")
-            popup = error_message("Error in Line A", "End Date equal to Start Date")
+            ##The end date is equal to the start date
+            ##Create a popup to inform the user
+            popup = error_message("Error in Line A", "Start Date equal to End Date")
             popup.exec()
             validation_passed = False
         
@@ -162,27 +188,47 @@ class View_Data_Window(QMainWindow):
         validation_result_B = input_validation_B.validateDate()
 
         if validation_result_B == True:
-            print("Validated")
-            popup = error_message("Graph B Valid", "Passed")
-            popup.exec()
+            ##Set passed to true
             validation_passed = True
         elif validation_result_B == "end_date before start_date":
+            ##The end date is before the start date
+            ##Create a popup to inform the user
             popup = error_message("Error in Line B", "End Date before Start Date")
             popup.exec()
             validation_passed = False
         elif validation_result_B == "start_date = end_date":
+            ##The end date is equal to the start date
+            ##Create a popup to inform the user
             print ("start_date = end_date")
             popup = error_message("Error in Line B", "End Date equal to Start Date")
             popup.exec()
             validaton_passed = False
         
-        ##Have the inputs passed validation?
+        
+        ##Validation has been passed, return true
         if validation_passed == True:
-            self.plot_graph()
+            return True
             
             
     def plot_graph(self):
-        pass
+        ##Use the getter method from the data options to retrieve user inputs
+        ##A dictionary is returned with the keys being the input type
+        inputsA = self.data_options_A.getInputs()
+        inputsB = self.data_options_B.getInputs()
+        
+        ##Extracts start and end dates from the dictionary
+        start_dates = [inputsA['start_date'], inputsB['start_date']]
+        end_dates = [inputsA['end_date'], inputsB['end_date']]
+        
+        ##Only plot the graph if the inputs are valid
+        if self.validate_data(start_dates, end_dates) != True:
+            return(False)
+        
+        
+        
+        
+        
+        
         
                 
         
