@@ -287,7 +287,10 @@ class Retrieve_Data:
             
             ##Create an SQL query to retrieve this data from the db
             query = (f'''SELECT Date, Region, {condition}
-                     FROM flights WHERE Region = {region}
+                     FROM flights
+                     WHERE Region = {region} 
+                     AND Date BETWEEN {start_date} 
+                     AND {end_date}
                      
                      ''')            
         
