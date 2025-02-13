@@ -28,5 +28,27 @@ class options():
             "Rain (mm)",
             "Wind Speed (kts)",
             "Wind Direction (degrees)",
+            "Distance (km)",
+            "Speed (kph)",
+            "Completed",
+            "Speed Points",
+            "Height Points",
+            "Distance Points",
+            "Bonus Points",
+            "Total Score",
             
         ]
+        
+        ##A lookup table to convert the text that is shown
+        ##for a condition into the field name from the db
+        self.conditionLookup = {
+            "Distance (km)" : "Scoring Distance",
+            "Speed (kph)" : "Speed (kph)",
+            "Completed" : "Completed",
+            "Speed Points" : "Vpoints",
+            "Height Points" : "Hpoints",
+            "Distance Points" : "Dpoints",
+            "Bonus Points" : "BPoints",
+            "Total Score" : "Total Score",
+            
+        }

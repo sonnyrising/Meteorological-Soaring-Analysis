@@ -271,6 +271,8 @@ class date_input(QWidget):
         self.date_input.setMaximumSize(225,60)
         ##Set the styling of the date input
         self.date_input.setStyleSheet("font-size: 14px;")
+        ##Set the format of the date to match SQL Standard
+        self.date_input.setDisplayFormat("dd-MM-yyyy")
         
         ##Add the subtitle and date input to the layout
         date_input_layout.addWidget(subtitle)

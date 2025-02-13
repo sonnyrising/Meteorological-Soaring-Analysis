@@ -26,6 +26,8 @@ from PyQt6.QtGui import QIcon
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 
+from Drop_Down_Options import options
+
 class View_Data_Window(QMainWindow):
 
     def __init__(self):
@@ -235,9 +237,9 @@ class View_Data_Window(QMainWindow):
         
 ##A class to handle validating user inputs  
 class inputValidation:
-    def __init__(self,start_date, end_date):
-        self.start_date = start_date
-        self.end_date = end_date
+    def __init__(self, Pstart_date, Pend_date):
+        self.start_date = Pstart_date
+        self.end_date = Pend_date
     
     def validateDate(self):
         ##Due to the QDateEdit widget, the date is already in the correct format
@@ -256,6 +258,41 @@ class inputValidation:
         ##Check if the start date is the same as the end date
         else:
             return "start_date = end_date"
+
+##A class to handle retrieving data from the flights database
+##and weather API
+class Retrieve_Data:
+    def __init__(self):
+        self.inputsA = self.data_options_A.getInputs()
+        self.inputsB = self.data_options_B.getInputs()
+        
+        ##Retrieve the data from the flight database
+        def retrieve_flights(self, A_or_B):
+            ##Retrieve data with the parameters from the correct input
+            if A_or_B == 'A':
+                inputs = self.inputsA
+            elif A_or_B == 'B':
+                inputs = self.inputsB
+            else:
+                return False
+            
+            start_date = inputs['start_date']
+            end_date = inputs['end_date']
+            condition = inputs['condition']
+            region = inputs['region']
+            
+            ##Use the lookup table in Drop_Down_Options to convert the
+            ##Drop Down titles into field headings
+            condition = options.conditionLookup[condition]
+            
+            ##Create an SQL query to retrieve this data from the db
+            query = (f'''SELECT Date, Region, {condition}
+                     FROM flights WHERE Region = {region}
+                     
+                     ''')            
+        
+        
+    
         
 
         
