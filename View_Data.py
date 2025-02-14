@@ -1,5 +1,8 @@
 import sys
 
+##Used to query the database
+import sqlite3
+
 ##Import classes from my own custom UI Elements
 from Custom_UI_Elements import (
     Menu_Button,
@@ -99,7 +102,7 @@ class View_Data_Window(QMainWindow):
         plot_button = Menu_Button(
             text = 'Plot Graph',
             color = '#7ED941',
-            subroutine = self.validate_data
+            subroutine = self.plot_graph
         )
 
         ##Set the maximum size of the plot button
@@ -116,10 +119,11 @@ class View_Data_Window(QMainWindow):
         
         # Create the maptlotlib FigureCanvas object,
         # which defines a single set of axes as self.axes.
-        sc = MplCanvas(self, width=5, height=4, dpi=100)
-        sc.axes.plot([12, 45, 106, 15, 24], [10,1,20,3,40])
+        self.sc = MplCanvas(self, width=5, height=4, dpi=100)
+        self.sc.axes.plot([12, 45, 106, 15, 24], [10,1,20,3,40])
+        self.sc.hide()
 
-        main_contents_layout.addWidget(sc)
+        main_contents_layout.addWidget(self.sc)
         
         main_layout.addLayout(main_contents_layout)
                      
@@ -204,7 +208,7 @@ class View_Data_Window(QMainWindow):
             print ("start_date = end_date")
             popup = error_message("Error in Line B", "End Date equal to Start Date")
             popup.exec()
-            validaton_passed = False
+            validation_passed = False
         
         
         ##Validation has been passed, return true
@@ -223,17 +227,34 @@ class View_Data_Window(QMainWindow):
         end_dates = [inputsA['end_date'], inputsB['end_date']]
         
         ##Only plot the graph if the inputs are valid
-        if self.validate_data(start_dates, end_dates) != True:
+        if self.validate_data() != True:
             return(False)
         
+        ##Create an instance of data retrieval
+        retriever = Retrieve_Data(self.data_options_A, self.data_options_B)
+        pointsA = retriever.retrieve_flights('A')   
+        pointsB = retriever.retrieve_flights('B')
+        
+        ##Convert data to lists or numpy arrays
+        datesA = [row[0] for row in pointsA]
+        valuesA = [row[1] for row in pointsA]
+        
+        datesB = [row[0] for row in pointsB]
+        valuesB = [row[1] for row in pointsB]
+        
+        ##Clear previous plots
+        self.sc.axes.clear()
+        
+        ##Plot the graph
+        self.sc.axes.plot(datesA, valuesA, label='Line A')
+        self.sc.axes.plot(datesB, valuesB, label='Line B')
+        self.sc.axes.legend()
+        
+        self.sc.show()
+        self.sc.draw()
         
         
-        
-        
-        
-        
-                
-        
+
         
 ##A class to handle validating user inputs  
 class inputValidation:
@@ -262,38 +283,51 @@ class inputValidation:
 ##A class to handle retrieving data from the flights database
 ##and weather API
 class Retrieve_Data:
-    def __init__(self):
-        self.inputsA = self.data_options_A.getInputs()
-        self.inputsB = self.data_options_B.getInputs()
+    def __init__(self, data_options_A, data_options_B):
+        self.inputsA = data_options_A.getInputs()
+        self.inputsB = data_options_B.getInputs()
         
-        ##Retrieve the data from the flight database
-        def retrieve_flights(self, A_or_B):
-            ##Retrieve data with the parameters from the correct input
-            if A_or_B == 'A':
-                inputs = self.inputsA
-            elif A_or_B == 'B':
-                inputs = self.inputsB
-            else:
-                return False
-            
-            start_date = inputs['start_date']
-            end_date = inputs['end_date']
-            condition = inputs['condition']
-            region = inputs['region']
-            
-            ##Use the lookup table in Drop_Down_Options to convert the
-            ##Drop Down titles into field headings
-            condition = options.conditionLookup[condition]
-            
-            ##Create an SQL query to retrieve this data from the db
-            query = (f'''SELECT Date, Region, {condition}
-                     FROM flights
-                     WHERE Region = {region} 
-                     AND Date BETWEEN {start_date} 
-                     AND {end_date}
-                     
-                     ''')            
+    ##Retrieve the data from the flight database
+    def retrieve_flights(self, A_or_B):
+        ##Retrieve data with the parameters from the correct input
+        if A_or_B == 'A':
+            inputs = self.inputsA
+        elif A_or_B == 'B':
+            inputs = self.inputsB
+        else:
+            return False
         
+        start_date = inputs['start_date'].toString("yyyy-MM-dd")
+        end_date = inputs['end_date'].toString("yyyy-MM-dd")
+        condition = inputs['condition']
+        region = inputs['region']
+        
+        ##Use the lookup table in Drop_Down_Options to convert the
+        ##Drop Down titles into field headings
+        optionsObject = options()
+        condition = optionsObject.conditionLookup[condition]
+        
+        ##Create an SQL query to retrieve this data from the db
+        query = (f'''SELECT Date, [{condition}]
+                    FROM flights
+                    WHERE Region = '{region}' 
+                    AND DateConverted BETWEEN '{start_date}' 
+                    AND '{end_date}'
+                    ORDER BY DateConverted ASC
+                    ''')            
+    
+        ##Open the database temporarily ensuring it is closed when finished with
+        with sqlite3.connect('MSA.db', timeout=30) as conn:
+            ##Create an instance of cursor
+            cursor = conn.cursor()
+            ##Execute the query defined earlier
+            cursor.execute(query)
+            ##Fetch the data returned
+            rows = cursor.fetchall()
+            
+            print(rows)
+            return rows
+
         
     
         
@@ -302,11 +336,11 @@ class Retrieve_Data:
         
 
 
-##Instantiate a QtApplication
-app = QApplication(sys.argv)
-##Set the active window to the main window we have been working with
-window = View_Data_Window()
-##Open the window maximized (Windowed FullScreen)
-window.showMaximized()
-##Run the application
-sys.exit(app.exec())
+# ##Instantiate a QtApplication
+# app = QApplication(sys.argv)
+# ##Set the active window to the main window we have been working with
+# window = View_Data_Window()
+# ##Open the window maximized (Windowed FullScreen)
+# window.showMaximized()
+# ##Run the application
+# sys.exit(app.exec())
