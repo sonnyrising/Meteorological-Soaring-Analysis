@@ -322,33 +322,37 @@ class View_Data_Window(QMainWindow):
             self.sc.axes.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
             
         ##Rotate the axis label by 45 degrees
-        self.sc.axes.set_xticklabels(self.sc.axes.get_xticklabels(), rotation=45)
+        self.sc.axes.set_xticklabels(self.sc.axes.get_xticklabels(), rotation=45, ha='right')
+        ##Reduce size
+        self.sc.axes.tick_params(axis='x', which='major', labelsize=10)
         
-        ##Add a label to the axis
+        ## Adjust the bottom margin to ensure the labels are visible
+        self.sc.figure.subplots_adjust(bottom=0.2)
+        
+        ##Label the x axis
+        self.sc.axes.set_xlabel("Time")
+        ##If lineB is selected label the y axis with both conditions and regions
         if lineB:
-            self.sc.axes.set_xlabel(
+            ##Set y axis label
+            self.sc.axes.set_ylabel(
                 inputsA['condition'] +' - ' +'(' + inputsA['region'] + ')' +
                 ' / ' +
-                inputsB['condition'] +' - ' + '(' + inputsB['region'] + ')'
-            )
+                inputsB['condition'] +' - ' + '(' + inputsB['region'] + ')')
             
             ##Set the legend
             self.sc.axes.legend([
                 inputsA['condition'] +' - ' + '(' + inputsA['region'] + ')',
-                inputsB['condition'] +' - ' + '(' + inputsB['region'] + ')'
-            ]
-            )
-            
+                inputsB['condition'] +' - ' + '(' + inputsB['region'] + ')'])
+        ##If lineB isn't selected label the y axis with the single condition and region
         else:
-            self.sc.axes.set_xlabel(
-                inputsA['condition'] +' - ' + '(' + inputsA['region'] + ')'
-            )
+            ##Set y axis label
+            self.sc.axes.set_ylabel(
+                inputsA['condition'] +' - ' + '(' + inputsA['region'] + ')')
             
             ##Set the legend
             self.sc.axes.legend([
-                inputsA['condition'] +' - ' + '(' + inputsA['region'] + ')'
-            ]
-            )
+                inputsA['condition'] +' - ' + '(' + inputsA['region'] + ')'])
+
         
         
         self.sc.show()

@@ -1,0 +1,25 @@
+# Ignore the .cache.sqlite file
+.cache.sqlite
+
+# Other files and directories to ignore
+*.log
+*.tmp
+__pycache__/
+*.pyc
+
+# Ignore virtual environment directories
+venv/
+env/
+
+# Ignore build artifacts
+build/
+dist/
+*.egg-info/
+
+# Ignore IDE-specific files
+.vscode/
+.idea/
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
