@@ -12,7 +12,7 @@ from Custom_UI_Elements import (
     SubTitle,
     data_options,
     error_message,
-    MplCanvas
+    MplCanvas,
 )
 
 from PyQt6.QtWidgets import (
@@ -21,7 +21,8 @@ from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QHBoxLayout,
-    QLabel
+    QLabel,
+    QCheckBox,
 )
 
 from PyQt6.QtGui import QIcon
@@ -94,8 +95,10 @@ class View_Data_Window(QMainWindow):
         
         ##Add the user inputs for each graph
         self.data_options_A = data_options("Line A:")
+        self.line_B_checkbox = QCheckBox('Plot Second Line', self)
         self.data_options_B = data_options("Line B:")
         left_third_layout.addWidget(self.data_options_A)
+        left_third_layout.addWidget(self.line_B_checkbox)
         left_third_layout.addWidget(self.data_options_B)
         
         ##Add a button to create the graph
@@ -159,6 +162,12 @@ class View_Data_Window(QMainWindow):
         ##A flag to indicate whether inputs have been validated
         validation_passed = False
         
+        ##Check if the user wishes to plot a second line
+        if self.line_B_checkbox.isChecked():
+            lineB = True
+        else:
+            lineB = False
+        
         ##Use the getter method from the data options to retrieve user inputs
         ##A dictionary is returned with the keys being the input type
         inputsA = self.data_options_A.getInputs()
@@ -189,26 +198,28 @@ class View_Data_Window(QMainWindow):
             popup.exec()
             validation_passed = False
         
-        ##Create an instance of input validation to the current inputs for line B
-        input_validation_B = inputValidation(start_dates[1], end_dates[1])
-        validation_result_B = input_validation_B.validateDate()
+        ##Only validate input B if the user is plotting them:
+        if lineB:
+            ##Create an instance of input validation to the current inputs for line B
+            input_validation_B = inputValidation(start_dates[1], end_dates[1])
+            validation_result_B = input_validation_B.validateDate()
 
-        if validation_result_B == True:
-            ##Set passed to true
-            validation_passed = True
-        elif validation_result_B == "end_date before start_date":
-            ##The end date is before the start date
-            ##Create a popup to inform the user
-            popup = error_message("Error in Line B", "End Date before Start Date")
-            popup.exec()
-            validation_passed = False
-        elif validation_result_B == "start_date = end_date":
-            ##The end date is equal to the start date
-            ##Create a popup to inform the user
-            print ("start_date = end_date")
-            popup = error_message("Error in Line B", "End Date equal to Start Date")
-            popup.exec()
-            validation_passed = False
+            if validation_result_B == True:
+                ##Set passed to true
+                validation_passed = True
+            elif validation_result_B == "end_date before start_date":
+                ##The end date is before the start date
+                ##Create a popup to inform the user
+                popup = error_message("Error in Line B", "End Date before Start Date")
+                popup.exec()
+                validation_passed = False
+            elif validation_result_B == "start_date = end_date":
+                ##The end date is equal to the start date
+                ##Create a popup to inform the user
+                print ("start_date = end_date")
+                popup = error_message("Error in Line B", "End Date equal to Start Date")
+                popup.exec()
+                validation_passed = False
         
         
         ##Validation has been passed, return true
@@ -217,6 +228,12 @@ class View_Data_Window(QMainWindow):
             
             
     def plot_graph(self):
+        ##Check if the user wishes to plot a second line
+        if self.line_B_checkbox.isChecked():
+            lineB = True
+        else:
+            lineB = False
+        
         ##Use the getter method from the data options to retrieve user inputs
         ##A dictionary is returned with the keys being the input type
         inputsA = self.data_options_A.getInputs()
@@ -225,6 +242,8 @@ class View_Data_Window(QMainWindow):
         ##Extracts start and end dates from the dictionary
         start_dates = [inputsA['start_date'], inputsB['start_date']]
         end_dates = [inputsA['end_date'], inputsB['end_date']]
+        start_dates = [inputsA["start_date"]]
+        end_dates = [inputsA["end_date"]]
         
         ##Only plot the graph if the inputs are valid
         if self.validate_data() != True:
@@ -234,20 +253,27 @@ class View_Data_Window(QMainWindow):
         retriever = Retrieve_Data(self.data_options_A, self.data_options_B)
         pointsA = retriever.retrieve_flights('A')   
         pointsB = retriever.retrieve_flights('B')
+            
         
         ##Convert data to lists or numpy arrays
         datesA = [row[0] for row in pointsA]
         valuesA = [row[1] for row in pointsA]
         
-        datesB = [row[0] for row in pointsB]
-        valuesB = [row[1] for row in pointsB]
+        ##Only convert and plot inputsB if the uer wants to plot them
+        if lineB:
+            datesB = [row[0] for row in pointsB]
+            valuesB = [row[1] for row in pointsB]
         
         ##Clear previous plots
         self.sc.axes.clear()
         
         ##Plot the graph
         self.sc.axes.plot(datesA, valuesA, label='Line A')
-        self.sc.axes.plot(datesB, valuesB, label='Line B')
+        ##Only plot lineB if the user has selected
+        if lineB:
+            self.sc.axes.plot(datesB, valuesB, label='Line B')
+        # self.sc.axes.xlabel("Date")
+        # self.sc.axes.ylabel()
         self.sc.axes.legend()
         
         self.sc.show()
@@ -336,11 +362,11 @@ class Retrieve_Data:
         
 
 
-# ##Instantiate a QtApplication
-# app = QApplication(sys.argv)
-# ##Set the active window to the main window we have been working with
-# window = View_Data_Window()
-# ##Open the window maximized (Windowed FullScreen)
-# window.showMaximized()
-# ##Run the application
-# sys.exit(app.exec())
+##Instantiate a QtApplication
+app = QApplication(sys.argv)
+##Set the active window to the main window we have been working with
+window = View_Data_Window()
+##Open the window maximized (Windowed FullScreen)
+window.showMaximized()
+##Run the application
+sys.exit(app.exec())
