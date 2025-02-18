@@ -327,26 +327,26 @@ class View_Data_Window(QMainWindow):
         ##Add a label to the axis
         if lineB:
             self.sc.axes.set_xlabel(
-                inputsA['condition'] + '(' + inputsA['region'] + ')' +
+                inputsA['condition'] +' - ' +'(' + inputsA['region'] + ')' +
                 ' / ' +
-                inputsB['condition'] + '(' + inputsB['region'] + ')'
+                inputsB['condition'] +' - ' + '(' + inputsB['region'] + ')'
             )
             
             ##Set the legend
             self.sc.axes.legend([
-                inputsA['condition'] +' ' + '(' + inputsA['region'] + ')',
-                inputsB['condition'] +' ' + '(' + inputsB['region'] + ')'
+                inputsA['condition'] +' - ' + '(' + inputsA['region'] + ')',
+                inputsB['condition'] +' - ' + '(' + inputsB['region'] + ')'
             ]
             )
             
         else:
             self.sc.axes.set_xlabel(
-                inputsA['condition'] +' ' + '(' + inputsA['region'] + ')'
+                inputsA['condition'] +' - ' + '(' + inputsA['region'] + ')'
             )
             
             ##Set the legend
             self.sc.axes.legend([
-                inputsA['condition'] +' ' + '(' + inputsA['region'] + ')'
+                inputsA['condition'] +' - ' + '(' + inputsA['region'] + ')'
             ]
             )
         
