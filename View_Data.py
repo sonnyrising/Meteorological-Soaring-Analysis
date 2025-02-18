@@ -324,6 +324,12 @@ class View_Data_Window(QMainWindow):
         ##Rotate the axis label by 45 degrees
         self.sc.axes.set_xticklabels(self.sc.axes.get_xticklabels(), rotation=45)
         
+        ##Add a label to the axis
+        if lineB:
+            self.sc.axes.set_xlabel(inputsA['condition'] + ' / ' + inputsB['condition'])
+        else:
+            self.sc.axes.set_xlabel(inputsA['condition'])
+        
         self.sc.axes.legend()
         
         self.sc.show()
