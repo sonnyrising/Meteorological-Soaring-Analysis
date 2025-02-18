@@ -322,7 +322,12 @@ class View_Data_Window(QMainWindow):
             self.sc.axes.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
             
         ##Rotate the axis label by 45 degrees
-        self.sc.axes.set_xticklabels(self.sc.axes.get_xticklabels(), rotation=45)
+        self.sc.axes.set_xticklabels(self.sc.axes.get_xticklabels(), rotation=45, ha='right')
+        ##Reduce size
+        self.sc.axes.tick_params(axis='x', which='major', labelsize=10)
+        
+        ## Adjust the bottom margin to ensure the labels are visible
+        self.sc.figure.subplots_adjust(bottom=0.2)
         
         ##Add a label to the axis
         if lineB:

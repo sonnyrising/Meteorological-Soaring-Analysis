@@ -367,7 +367,7 @@ class error_message(QDialog):
 ##A class to contain the graph created by MPL (Matplotlib)
 class MplCanvas(FigureCanvasQTAgg):
     ##Set the dimensions of the graph
-    def __init__(self, parent = None, width = 5, height = 4, dpi = 100):
+    def __init__(self, parent = None, width = 6, height = 3.5, dpi = 100):
         ##Create an instance of a figure (graph) with the
         ##Passed dimensions
         fig = Figure(figsize=(width, height), dpi=dpi)
