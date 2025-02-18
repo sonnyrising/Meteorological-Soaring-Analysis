@@ -1,5 +1,12 @@
 import sys
 
+from datetime import(
+    datetime,
+    timedelta,
+)
+
+import numpy as np
+
 ##Used to query the database
 import sqlite3
 
@@ -29,6 +36,7 @@ from PyQt6.QtGui import QIcon
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
+import matplotlib.dates as mdates
 
 from Drop_Down_Options import options
 
@@ -254,16 +262,31 @@ class View_Data_Window(QMainWindow):
         pointsA = retriever.retrieve_flights('A')   
         pointsB = retriever.retrieve_flights('B')
             
-        
-        ##Convert data to lists or numpy arrays
-        datesA = [row[0] for row in pointsA]
-        valuesA = [row[1] for row in pointsA]
+        ##Convert the values for A into a numpy array
+        ##Convert dates from DD-MM-YYYY to YYYY-MM-DD
+        ##To support the matplotlib date format
+        datesA = [mdates.date2num(datetime.strptime(row[0], "%d-%m-%Y")) for row in pointsA]
+        ##Convert to numpy array
+        datesA_numpy = np.array(datesA)
+        ##Convert values to floats
+        valuesA = [float(row[1]) for row in pointsA]
+        ##Find the range of dates
+        date_rangeA = datesA_numpy.max() - datesA_numpy.min()
         
         ##Only convert and plot inputsB if the uer wants to plot them
         if lineB:
-            datesB = [row[0] for row in pointsB]
-            valuesB = [row[1] for row in pointsB]
-        
+            ##Convert dates from DD-MM-YYYY to YYYY-MM-DD
+            ##To support the matplotlib date format
+            datesB = [mdates.date2num(datetime.strptime(row[0], "%d-%m-%Y")) for row in pointsB]
+            ##Convert to numpy array to get range
+            datesB_numpy = np.array(datesA)
+            ##Find the range of dates
+            date_rangeB = datesB_numpy.max() - datesB_numpy.min()
+            ##Convert values to floats
+            valuesB = [float(row[1]) for row in pointsB]
+
+            
+            
         ##Clear previous plots
         self.sc.axes.clear()
         
@@ -272,8 +295,35 @@ class View_Data_Window(QMainWindow):
         ##Only plot lineB if the user has selected
         if lineB:
             self.sc.axes.plot(datesB, valuesB, label='Line B')
-        # self.sc.axes.xlabel("Date")
-        # self.sc.axes.ylabel()
+            
+        ## Convert date range to timedelta to be able to locate days
+        date_rangeA = timedelta(days=(datesA[-1] - datesA[0]))
+        if lineB:
+            date_rangeB = timedelta(days=(datesB[-1] - datesB[0]))
+            
+        # The largest date range should be used
+        if lineB and date_rangeB > date_rangeA:
+            date_range = date_rangeB
+        else:
+            date_range = date_rangeA
+
+        ##Set the axis label based on the date range
+        ##If there are less than 2 months show each day
+        if date_range.days <= 60:
+            self.sc.axes.xaxis.set_major_locator(mdates.WeekdayLocator(interval=1))
+            self.sc.axes.xaxis.set_major_formatter(mdates.DateFormatter("%d %b"))
+        ##If there are less than 2 years show each month
+        elif date_range.days <= 730:
+            self.sc.axes.xaxis.set_major_locator(mdates.MonthLocator(interval=1))
+            self.sc.axes.xaxis.set_major_formatter(mdates.DateFormatter("%b %Y"))
+        ##If there is more than 2 years show each year
+        else:
+            self.sc.axes.xaxis.set_major_locator(mdates.YearLocator())
+            self.sc.axes.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
+            
+        ##Rotate the axis label by 45 degrees
+        self.sc.axes.set_xticklabels(self.sc.axes.get_xticklabels(), rotation=45)
+        
         self.sc.axes.legend()
         
         self.sc.show()
@@ -350,8 +400,7 @@ class Retrieve_Data:
             cursor.execute(query)
             ##Fetch the data returned
             rows = cursor.fetchall()
-            
-            print(rows)
+
             return rows
 
         
