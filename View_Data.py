@@ -326,17 +326,34 @@ class View_Data_Window(QMainWindow):
         
         ##Add a label to the axis
         if lineB:
-            self.sc.axes.set_xlabel(inputsA['condition'] + ' / ' + inputsB['condition'])
+            self.sc.axes.set_xlabel(
+                inputsA['condition'] + '(' + inputsA['region'] + ')' +
+                ' / ' +
+                inputsB['condition'] + '(' + inputsB['region'] + ')'
+            )
+            
+            ##Set the legend
+            self.sc.axes.legend([
+                inputsA['condition'] +' ' + '(' + inputsA['region'] + ')',
+                inputsB['condition'] +' ' + '(' + inputsB['region'] + ')'
+            ]
+            )
+            
         else:
-            self.sc.axes.set_xlabel(inputsA['condition'])
+            self.sc.axes.set_xlabel(
+                inputsA['condition'] +' ' + '(' + inputsA['region'] + ')'
+            )
+            
+            ##Set the legend
+            self.sc.axes.legend([
+                inputsA['condition'] +' ' + '(' + inputsA['region'] + ')'
+            ]
+            )
         
-        self.sc.axes.legend()
         
         self.sc.show()
         self.sc.draw()
         
-        
-
         
 ##A class to handle validating user inputs  
 class inputValidation:
