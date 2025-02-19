@@ -33,12 +33,7 @@ import matplotlib.dates as mdates
 import matplotlib.dates as mdates
 
 from Drop_Down_Options import options
-
-##Mehtods to retrieve data from database /api and input validation
-from MSA_Utils import (
-    Retrieve_Data,
-    input_validation,
-)
+from lookup_tables import lookup_tables
 
 class View_Data_Window(QMainWindow):
 
@@ -258,14 +253,25 @@ class View_Data_Window(QMainWindow):
             
             
     def plot_graph(self):
+        lineB = False
+        ##Check if the user wishes to plot a second line
+        if self.line_B_checkbox.isChecked():
+            lineB = True
+        else:
+            lineB = False
+        
         ##Use the getter method from the data options to retrieve user inputs
         ##A dictionary is returned with the keys being the input type
         inputsA = self.data_options_A.getInputs()
         inputsB = self.data_options_B.getInputs()
         
         ##Extracts start and end dates from the dictionary
-        start_dates = [inputsA['start_date'], inputsB['start_date']]
-        end_dates = [inputsA['end_date'], inputsB['end_date']]
+        if lineB:
+            start_dates = [inputsA['start_date'], inputsB['start_date']]
+            end_dates = [inputsA['end_date'], inputsB['end_date']]
+        else:
+            start_dates = [inputsA["start_date"]]
+            end_dates = [inputsA["end_date"]]
         
         ##Only plot the graph if the inputs are valid
         if self.validate_data(start_dates, end_dates) != True:
@@ -273,13 +279,68 @@ class View_Data_Window(QMainWindow):
         
         ##Create an instance of data retrieval
         retriever = Retrieve_Data(self.data_options_A, self.data_options_B)
-        pointsA = retriever.retrieve_flights('A')   
-        pointsB = retriever.retrieve_flights('B')
+        
+        flight_data = [
+            "Distance (km)",
+            "Speed (kph)",
+            "Completed",
+            "Speed Points",
+            "Height Points",
+            "Distance Points",
+            "Bonus Points",
+            "Total Score",
+        ]
+        
+        weather_data = [
+            'Temperature (Celcius)',
+            'Humidity (%)',
+            'Dew Point (Celcius)',
+            'Precipitation (mm)',
+            'Wind Speed (kph)'
+            ]
+        
+            ## Initialize pointsA and pointsB to None
+        pointsA = None
+        pointsB = None
+        
+        ##Call the correct subroutine based on if the user has requested weather or flight data
+        if lineB:
+            if inputsA['condition'] in flight_data:
+                print("flight")
+                pointsA = retriever.retrieve_flights('A')   
+            elif inputsA['condition'] in weather_data:
+                print("weather")
+                pointsA = retriever.retrieve_weather('A')
+            
+            if inputsB['condition'] in flight_data:
+                pointsB = retriever.retrieve_flights('B')
+            elif inputsB['condition'] in weather_data:
+                pointsB = retriever.retrieve_weather('B')
+                
+        else:
+            if inputsA['condition'] in flight_data:
+                pointsA = retriever.retrieve_flights('A') 
+                print("flight")  
+            elif inputsA['condition'] in weather_data:
+                pointsA = retriever.retrieve_weather('A')
+                print("weather")
+            else:
+                print(f"Condition: {inputsA['condition']}")
+                print("Condition invalid")
+                
+        ## Ensure pointsA and pointsB are not None
+        if pointsA is None:
+            print("Error: No data retrieved for Line A")
+            return False
+        
+        if lineB and pointsB is None:
+            print("Error: No data retrieved for Line B")
+            return False
             
         ##Convert the values for A into a numpy array
         ##Convert dates from DD-MM-YYYY to YYYY-MM-DD
         ##To support the matplotlib date format
-        datesA = [mdates.date2num(datetime.strptime(row[0], "%d-%m-%Y")) for row in pointsA]
+        datesA = [mdates.date2num(datetime.strptime(row[0], "%Y-%m-%d")) for row in pointsA]
         ##Convert to numpy array
         datesA_numpy = np.array(datesA)
         ##Convert values to floats
@@ -291,7 +352,7 @@ class View_Data_Window(QMainWindow):
         if lineB:
             ##Convert dates from DD-MM-YYYY to YYYY-MM-DD
             ##To support the matplotlib date format
-            datesB = [mdates.date2num(datetime.strptime(row[0], "%d-%m-%Y")) for row in pointsB]
+            datesB = [mdates.date2num(datetime.strptime(row[0], "%Y-%m-%d")) for row in pointsB]
             ##Convert to numpy array to get range
             datesB_numpy = np.array(datesA)
             ##Find the range of dates
@@ -405,34 +466,156 @@ class Retrieve_Data:
         self.inputsA = self.data_options_A.getInputs()
         self.inputsB = self.data_options_B.getInputs()
         
-        ##Retrieve the data from the flight database
-        def retrieve_flights(self, A_or_B):
-            ##Retrieve data with the parameters from the correct input
-            if A_or_B == 'A':
-                inputs = self.inputsA
-            elif A_or_B == 'B':
-                inputs = self.inputsB
-            else:
-                return False
-            
-            start_date = inputs['start_date']
-            end_date = inputs['end_date']
-            condition = inputs['condition']
-            region = inputs['region']
-            
-            ##Use the lookup table in Drop_Down_Options to convert the
-            ##Drop Down titles into field headings
-            condition = options.conditionLookup[condition]
-            
-            ##Create an SQL query to retrieve this data from the db
-            query = (f'''SELECT Date, Region, {condition}
-                     FROM flights
-                     WHERE Region = {region} 
-                     AND Date BETWEEN {start_date} 
-                     AND {end_date}
-                     
-                     ''')            
+    ##Retrieve the data from the flight database
+    def retrieve_flights(self, A_or_B):
+        ##Retrieve data with the parameters from the correct input
+        if A_or_B == 'A':
+            inputs = self.inputsA
+        elif A_or_B == 'B':
+            inputs = self.inputsB
+        else:
+            return False
         
+        start_date = inputs['start_date'].toString("yyyy-MM-dd")
+        end_date = inputs['end_date'].toString("yyyy-MM-dd")
+        condition = inputs['condition']
+        region = inputs['region']
+        
+        ##Use the lookup table in lookup_tables to convert the
+        ##Drop Down titles into field headings
+        lookupObject = lookup_tables()
+        condition = lookupObject.conditionLookup[condition]
+        
+        ##Create an SQL query to retrieve this data from the db
+        query = (f'''SELECT Date, [{condition}]
+                    FROM flights
+                    WHERE Region = '{region}' 
+                    AND DateConverted BETWEEN '{start_date}' 
+                    AND '{end_date}'
+                    ORDER BY DateConverted ASC
+                    ''')            
+    
+        ##Open the database temporarily ensuring it is closed when finished with
+        with sqlite3.connect('MSA.db', timeout=30) as conn:
+            ##Create an instance of cursor
+            cursor = conn.cursor()
+            ##Execute the query defined earlier
+            cursor.execute(query)
+            ##Fetch the data returned
+            rows = cursor.fetchall()
+
+            return rows
+        
+    ##A subroutine to retrieve historic weather data
+    ##from the open-meteo API
+    def retrieve_weather(self, A_or_B):
+        ##Import the necessary libraries for the API
+        import openmeteo_requests
+        import requests_cache
+        import pandas as pd
+        from retry_requests import retry    
+        
+        ## Setup the Open-Meteo API client with cache and retry on error
+        cache_session = requests_cache.CachedSession('.cache', expire_after = 3600)
+        retry_session = retry(cache_session, retries = 5, backoff_factor = 0.2)
+        openmeteo = openmeteo_requests.Client(session = retry_session)
+        
+        ##Retrieve data with the parameters from the correct input
+        if A_or_B == 'A':
+            inputs = self.inputsA
+        elif A_or_B == 'B':
+            inputs = self.inputsB
+        else:
+            return False
+        
+        start_date = inputs['start_date'].toString("yyyy-MM-dd")
+        end_date = inputs['end_date'].toString("yyyy-MM-dd")
+        condition = inputs['condition']
+        region = inputs['region']
+        
+        
+        ##Create an instance of lookup_tables
+        lookupObject = lookup_tables()
+        
+        ##Get the coordinates of the users region
+        regionCoord = lookupObject.region_lookup[region]
+        
+        ##Get the API request for the user's condition
+        APIcondition = lookupObject.conditionLookup[condition]
+
+        ##Set the URL of the API
+        url = "https://archive-api.open-meteo.com/v1/archive"
+        
+        ##Set the parameters for the request
+        params = {
+            "latitude" : regionCoord[1],
+            "longitude" : regionCoord[0],
+            "start_date" : start_date,
+            "end_date" : end_date,
+            "hourly": APIcondition
+        }
+        
+        responses = openmeteo.weather_api(url, params=params)
+
+        # Process first location. Add a for-loop for multiple locations or weather models
+        response = responses[0]
+        print(f"Coordinates {response.Latitude()}°N {response.Longitude()}°E")
+        print(f"Elevation {response.Elevation()} m asl")
+        print(f"Timezone {response.Timezone()} {response.TimezoneAbbreviation()}")
+        print(f"Timezone difference to GMT+0 {response.UtcOffsetSeconds()} s")
+
+        # Process hourly data. The order of variables needs to be the same as requested.
+        hourly = response.Hourly()   
+        condition = hourly.Variables(0).ValuesAsNumpy()               
+        
+        hourly_data = {"date": pd.date_range(
+        start = pd.to_datetime(hourly.Time(), unit = "s", utc = True),
+        end = pd.to_datetime(hourly.TimeEnd(), unit = "s", utc = True),
+        freq = pd.Timedelta(seconds = hourly.Interval()),
+        inclusive = "left"
+            )
+        }
+
+        hourly_data["condition"] = condition
+
+        hourly_dataframe = pd.DataFrame(data = hourly_data)
+        
+        averages = self.dailyAverage(hourly_dataframe)
+        
+        return averages
+        
+        
+        
+    ##Find daily average temp
+    ##(Between 10:00 and 17:00)
+    def dailyAverage(self, hourly_dataframe):
+        averages = []
+        ##Iterate through each day
+        for i in range(0, len(hourly_dataframe), 24):
+            sum = 0
+            ##Iterate through each hour between 10:00 and 17:00
+            for j in range(10, 18):
+                ##Sum the values for each hour
+                sum += hourly_dataframe.loc[i + j, "condition"]
+                ##Convert the date to a string
+                date_str = hourly_dataframe.loc[i, "date"].strftime("%Y-%m-%d")
+                ##Add the date and average to an array
+                averages.append([date_str, sum / 8])
+            
+            
+        return(averages)
+            
+                
+            
+
+                
+                
+            
+ 
+            
+        
+        
+
         
     
         
