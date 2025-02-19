@@ -487,8 +487,14 @@ class Retrieve_Data:
             cursor.execute(query)
             ##Fetch the data returned
             rows = cursor.fetchall()
+            
+            ## Convert the date format from dd-mm-yyyy to yyyy-mm-dd
+            formatted_rows = []
+            for row in rows:
+                date = datetime.strptime(row[0], "%d-%m-%Y").strftime("%Y-%m-%d")
+                formatted_rows.append((date, row[1]))
 
-            return rows
+            return formatted_rows
         
     ##A subroutine to retrieve historic weather data
     ##from the open-meteo API
