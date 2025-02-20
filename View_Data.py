@@ -46,6 +46,8 @@ class View_Data_Window(QMainWindow):
     def __init__(self):
         ##Inherits from QMainWindow, the window class from the PyQt library
         super().__init__()
+        
+        self.graph_shown = False
 
         self.setWindowTitle("Meteorological Soaring Analysis")
         self.setWindowIcon(QIcon("logo.png"))
@@ -100,6 +102,7 @@ class View_Data_Window(QMainWindow):
         ##Create a layout for the lower part of the window below the title
         main_contents_layout = QHBoxLayout()
         
+        
         left_third_layout = QVBoxLayout()
         
         ##Add the user inputs for each graph
@@ -116,18 +119,28 @@ class View_Data_Window(QMainWindow):
             color = '#7ED941',
             subroutine = self.plot_graph
         )
+        
+        ##Add a button to download the graph
+        self.export_button = Menu_Button(
+            text = 'Export Graph',
+            color = '#7ED941',
+            subroutine = self.export_graph  
+        )
 
         ##Set the maximum size of the plot button
         plot_button.setMaximumSize(200, 30)
         
-        ##Create a layout to hold all of the inputs
-        left_third_layout.addWidget(plot_button)
+        ##Create a layout to hold the plot and export button
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(plot_button)
+
+        
+        left_third_layout.addLayout(button_layout)
         
         ##Add the user inputs held on the left of the screen
         main_contents_layout.addLayout(left_third_layout)
         
 
-        
         
         # Create the maptlotlib FigureCanvas object,
         # which defines a single set of axes as self.axes.
@@ -135,7 +148,19 @@ class View_Data_Window(QMainWindow):
         self.sc.axes.plot([12, 45, 106, 15, 24], [10,1,20,3,40])
         self.sc.hide()
 
-        main_contents_layout.addWidget(self.sc)
+        graph_layout = QVBoxLayout()
+        
+        graph_layout.addWidget(self.export_button)
+        
+        ##hide the export button while there is no graph
+        self.export_button.hide()
+        
+        graph_layout.addWidget(self.sc)
+        
+        graph_layout.setStretch(0, 1)
+        graph_layout.setStretch(1, 29)
+        
+        main_contents_layout.addLayout(graph_layout)
         
         main_layout.addLayout(main_contents_layout)
                      
@@ -144,6 +169,9 @@ class View_Data_Window(QMainWindow):
         
         ##Set the main widget as the central widget of the main window
         self.setCentralWidget(MainWidget)
+        
+        ##Set the normalised flag to false
+        self.normalised = False
 
     def logo_clicked(self):
         ##Create a dialogue box for quit to main menu confirmation
@@ -161,6 +189,10 @@ class View_Data_Window(QMainWindow):
         else:
             ##If the user clicks cancel in the dialogue box, the application will continue running
             print("Cancel")
+            
+    def export_graph(self):
+        self.sc.figure.savefig('Saved Graph.png')
+
             
     def test(self):
         print("Test")
@@ -238,6 +270,8 @@ class View_Data_Window(QMainWindow):
             
     def plot_graph(self):
         lineB = False
+        self.graph_shown = True
+        self.export_button.show()
         ##Check if the user wishes to plot a second line
         if self.line_B_checkbox.isChecked():
             lineB = True
