@@ -395,7 +395,7 @@ class View_Data_Window(QMainWindow):
         self.sc.axes.plot(datesA, valuesA, label='Line A')
         ##Only plot lineB if the user has selected
         if lineB:
-            self.sc.axes.plot(datesB, valuesB, label='Line B')
+            self.sc.axes.plot(datesB, valuesB, label='Line B', alpha = 0.5)
             
         ## Convert date range to timedelta to be able to locate days
         date_rangeA = timedelta(days=(datesA[-1] - datesA[0]))
@@ -656,10 +656,8 @@ class Retrieve_Data:
         if inputsB["condition"] in view_data_window.flight_data:
             conditionB_range = self.find_range_sql(inputsB)
         else:
-            conditionB_range = self.find_range_sql(inputsB)
+            conditionB_range = self.find_range_api(inputsB)
             
-        print(f"condition A range = {conditionA_range}")
-        print(f"condition B range = {conditionB_range}")
             
             
                     
@@ -675,7 +673,6 @@ class Retrieve_Data:
         
         for i in range(len(valuesB)):
             try:
-                print(f"{float(valuesB[i][1])} / {conditionB_range} * 100")
                 valuesB[i] = list(valuesB[i])  # Convert tuple to list
                 valuesB[i][1] = (float(valuesB[i][1]) / conditionB_range) * 100
             except ValueError as e:
@@ -710,7 +707,6 @@ class Retrieve_Data:
             cursor.execute(query)
             ##Fetch the data returned
             row = cursor.fetchone()
-            print(f"Query result: {row}")
             
         if row is None or row[0] is None or row[1] is None:
             print("Error: No data found or range is 0")
@@ -718,10 +714,10 @@ class Retrieve_Data:
         
         maxValue = row[0]
         minValue = row[1]
-        print(f"max: {maxValue}, min: {minValue}")
+
         
         range_value = maxValue - minValue
-        print(f"Range value: {range_value}")
+
         
         if range_value == 0:
             print("Error: Range = 0")
@@ -729,6 +725,73 @@ class Retrieve_Data:
         else:
             return range_value
             
+            
+    def find_range_api(self, inputs):
+        ##Import the necessary libraries for the API
+        import openmeteo_requests
+        import requests_cache
+        import pandas as pd
+        from retry_requests import retry    
+        
+        ## Setup the Open-Meteo API client with cache and retry on error
+        cache_session = requests_cache.CachedSession('.cache', expire_after = 3600)
+        retry_session = retry(cache_session, retries = 5, backoff_factor = 0.2)
+        openmeteo = openmeteo_requests.Client(session = retry_session)
+        
+        condition = inputs["condition"]
+        region = inputs["region"]
+        ##Convert to the column heading used in the db
+        lookupObject = lookup_tables()
+        condition = lookupObject.conditionLookup[condition]
+        
+        ##Get the coordinates of the users region
+        regionCoord = lookupObject.region_lookup[region]
+
+        ##Set the URL of the API
+        url = "https://archive-api.open-meteo.com/v1/archive"
+        
+        ##Set the parameters for the request
+        params = {
+            "latitude" : regionCoord[1],
+            "longitude" : regionCoord[0],
+            "start_date" : "2010-01-01",
+            "end_date" : "2024-12-31",
+            "hourly": condition
+        }
+        
+        responses = openmeteo.weather_api(url, params=params)
+
+        # Process first location. Add a for-loop for multiple locations or weather models
+        response = responses[0]
+        print(f"Coordinates {response.Latitude()}°N {response.Longitude()}°E")
+        print(f"Elevation {response.Elevation()} m asl")
+        print(f"Timezone {response.Timezone()} {response.TimezoneAbbreviation()}")
+        print(f"Timezone difference to GMT+0 {response.UtcOffsetSeconds()} s")
+
+        # Process hourly data. The order of variables needs to be the same as requested.
+        hourly = response.Hourly()   
+        condition = hourly.Variables(0).ValuesAsNumpy()               
+        
+        hourly_data = {"date": pd.date_range(
+        start = pd.to_datetime(hourly.Time(), unit = "s", utc = True),
+        end = pd.to_datetime(hourly.TimeEnd(), unit = "s", utc = True),
+        freq = pd.Timedelta(seconds = hourly.Interval()),
+        inclusive = "left"
+            )
+        }
+
+        hourly_data["condition"] = condition
+
+        hourly_dataframe = pd.DataFrame(data = hourly_data)
+        
+        min_value = hourly_dataframe["condition"].min()
+        max_value = hourly_dataframe["condition"].max()
+        condition_range = max_value - min_value
+        return condition_range
+        
+        
+        
+        
             
                 
             
