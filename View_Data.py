@@ -349,16 +349,23 @@ class View_Data_Window(QMainWindow):
         ##If the 2 conditions are dissimiar they must be normalised
         if lineB:
             self.normalised = True
-            if inputsA["condition"] != inputsB["condition"]:
+            if (inputsA["condition"] != inputsB["condition"]):
                 normalised_data = retriever.normaliseData(
                     valuesA=pointsA,
                     valuesB=pointsB,
                     inputsA=inputsA,
                     inputsB=inputsB
                 )
-                for i in range(len(valuesA)):
+                # Update valuesA for all its data points
+                for i in range(len(normalised_data[0])):
                     valuesA[i] = normalised_data[0][i][1]
+                
+                # Update valuesB for all its data points
+                for i in range(len(normalised_data[1])):
                     valuesB[i] = normalised_data[1][i][1]
+                    
+                    
+                    
             else:
                 # When conditions are the same, no normalization is needed.
                 pass
