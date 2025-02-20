@@ -9,7 +9,7 @@ class lookup_tables:
             'Precipitation (mm)': 'Precipitation',
             'Wind Speed (kph)': 'WindSpeed',
             "Distance (km)": "Scoring Distance (km)",
-            "Speed (kph)": "Speed",
+            "Speed (kph)": "Speed (kph)",
             "Completed": "Completed",
             "Speed Points": "VPoints",
             "Height Points": "HPoints",
