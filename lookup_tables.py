@@ -3,11 +3,6 @@ class lookup_tables:
         ##A lookup table to convert the text that is shown
         ##for a condition into the field name from the db
         self.conditionLookup = {
-            'Temperature (Celcius)': 'Temperature',
-            'Humidity (%)': 'Humidity',
-            'Dew Point (Celcius)': 'Dew Point',
-            'Precipitation (mm)': 'Precipitation',
-            'Wind Speed (kph)': 'WindSpeed',
             "Distance (km)": "Scoring Distance (km)",
             "Speed (kph)": "Speed (kph)",
             "Completed": "Completed",
