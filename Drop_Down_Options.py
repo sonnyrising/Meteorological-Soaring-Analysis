@@ -32,11 +32,9 @@ class options():
             'Wind Speed (kph)',
             "Distance (km)",
             "Speed (kph)",
-            "Completed",
             "Speed Points",
             "Height Points",
             "Distance Points",
-            "Bonus Points",
             "Total Score",
             
         ]

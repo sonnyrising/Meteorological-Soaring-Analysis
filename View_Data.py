@@ -280,7 +280,7 @@ class View_Data_Window(QMainWindow):
         ##Create an instance of data retrieval
         retriever = Retrieve_Data(self.data_options_A, self.data_options_B)
         
-        flight_data = [
+        self.flight_data = [
             "Distance (km)",
             "Speed (kph)",
             "Completed",
@@ -291,7 +291,7 @@ class View_Data_Window(QMainWindow):
             "Total Score",
         ]
         
-        weather_data = [
+        self.weather_data = [
             'Temperature (Celcius)',
             'Humidity (%)',
             'Dew Point (Celcius)',
@@ -305,30 +305,30 @@ class View_Data_Window(QMainWindow):
         
         ##Call the correct subroutine based on if the user has requested weather or flight data
         if lineB:
-            if inputsA['condition'] in flight_data:
+            if inputsA['condition'] in self.flight_data:
                 print("flight")
                 pointsA = retriever.retrieve_flights('A')   
-            elif inputsA['condition'] in weather_data:
+            elif inputsA['condition'] in self.weather_data:
                 print("weather")
                 pointsA = retriever.retrieve_weather('A')
             
-            if inputsB['condition'] in flight_data:
+            if inputsB['condition'] in self.flight_data:
                 pointsB = retriever.retrieve_flights('B')
-            elif inputsB['condition'] in weather_data:
+            elif inputsB['condition'] in self.weather_data:
                 pointsB = retriever.retrieve_weather('B')
                 
         else:
-            if inputsA['condition'] in flight_data:
+            if inputsA['condition'] in self.flight_data:
                 pointsA = retriever.retrieve_flights('A') 
                 print("flight")  
-            elif inputsA['condition'] in weather_data:
+            elif inputsA['condition'] in self.weather_data:
                 pointsA = retriever.retrieve_weather('A')
                 print("weather")
             else:
                 print(f"Condition: {inputsA['condition']}")
                 print("Condition invalid")
                 
-        ## Ensure pointsA and pointsB are not None
+        ## Ensure pointsA and pointsB have been retrieved
         if pointsA is None:
             print("Error: No data retrieved for Line A")
             return False
@@ -336,7 +336,8 @@ class View_Data_Window(QMainWindow):
         if lineB and pointsB is None:
             print("Error: No data retrieved for Line B")
             return False
-            
+        
+        
         ##Convert the values for A into a numpy array
         ##Convert dates from DD-MM-YYYY to YYYY-MM-DD
         ##To support the matplotlib date format
@@ -359,7 +360,25 @@ class View_Data_Window(QMainWindow):
             date_rangeB = datesB_numpy.max() - datesB_numpy.min()
             ##Convert values to floats
             valuesB = [float(row[1]) for row in pointsB]
-
+            
+            
+        ##If the 2 conditions are dissimiar they must be normalised
+        if lineB:
+            self.normalised = True
+            if inputsA["condition"] != inputsB["condition"]:
+                normalised_data = retriever.normaliseData(
+                    valuesA=pointsA,
+                    valuesB=pointsB,
+                    inputsA=inputsA,
+                    inputsB=inputsB
+                )
+                for i in range(len(valuesA)):
+                    valuesA[i] = normalised_data[0][i][1]
+                    valuesB[i] = normalised_data[1][i][1]
+            else:
+                # When conditions are the same, no normalization is needed.
+                pass
+                
             
             
         ##Clear previous plots
@@ -430,6 +449,12 @@ class View_Data_Window(QMainWindow):
             ]
             )
         
+        ##Set the y axis label if data has been normalised
+        if self.normalised:
+            self.sc.axes.set_ylabel(
+                'Normalised Values (%)'
+            )
+            
         
         self.sc.show()
         self.sc.draw()
@@ -604,12 +629,99 @@ class Retrieve_Data:
                 ##Sum the values for each hour
                 sum += hourly_dataframe.loc[i + j, "condition"]
                 ##Convert the date to a string
+                ##*(Must be in YYYY-MM-DD format to support plot_graph)
                 date_str = hourly_dataframe.loc[i, "date"].strftime("%Y-%m-%d")
                 ##Add the date and average to an array
                 averages.append([date_str, sum / 8])
             
-            
+        ##Return the array in a format supported by the plot_graph subroutine
         return(averages)
+    
+    
+    ##When plotting 2 dissimilar conditions data must be normalised
+    def normaliseData(self, valuesA, valuesB, inputsA, inputsB):
+        ##Find ranges for both inputs
+        if inputsA["condition"] in view_data_window.flight_data:
+            conditionA_range = self.find_range_sql(inputsA)
+        else:
+            conditionA_range = self.find_range_api(inputsA)
+        
+        if inputsB["condition"] in view_data_window.flight_data:
+            conditionB_range = self.find_range_sql(inputsB)
+        else:
+            conditionB_range = self.find_range_sql(inputsB)
+            
+        print(f"condition A range = {conditionA_range}")
+        print(f"condition B range = {conditionB_range}")
+            
+            
+                    
+        ##For each data point, convert it to a percentage of that condition's range
+        ##Use error checking since some values from the db may return Null
+        for i in range(len(valuesA)):
+            try:
+                valuesA[i] = list(valuesA[i])  # Convert tuple to list
+                valuesA[i][1] = (float(valuesA[i][1]) / conditionA_range) * 100
+            except ValueError as e:
+                print(f"Skipping invalid data point in valuesA: {valuesA[i]} - {e}")
+                continue
+        
+        for i in range(len(valuesB)):
+            try:
+                print(f"{float(valuesB[i][1])} / {conditionB_range} * 100")
+                valuesB[i] = list(valuesB[i])  # Convert tuple to list
+                valuesB[i][1] = (float(valuesB[i][1]) / conditionB_range) * 100
+            except ValueError as e:
+                print(f"Skipping invalid data point in valuesB: {valuesB[i]} - {e}")
+                continue
+        
+        ##Return the normalised values
+        values = (valuesA, valuesB)
+        return values
+            
+            
+    def find_range_sql(self, inputs):
+        condition = inputs["condition"]
+        ##Convert to the column heading used in the db
+        lookup_object = lookup_tables()
+        condition = lookup_object.conditionLookup[condition]
+
+        ##SQL Query to find the range of values for that condition for the whole country from 2010 to 2024
+        query = (f'''SELECT
+                    MAX(CAST("{condition}" AS REAL)) AS max_value, 
+                    MIN(CAST("{condition}" AS REAL)) AS min_value
+                    FROM flights
+                    WHERE DateConverted BETWEEN '2010-01-01' AND '2024-12-31';''')
+        
+        print(f"Executing query: {query}")
+        
+        ##Open the database temporarily ensuring it is closed when finished with
+        with sqlite3.connect('MSA.db', timeout=30) as conn:
+            ##Create an instance of cursor
+            cursor = conn.cursor()
+            ##Execute the query defined earlier
+            cursor.execute(query)
+            ##Fetch the data returned
+            row = cursor.fetchone()
+            print(f"Query result: {row}")
+            
+        if row is None or row[0] is None or row[1] is None:
+            print("Error: No data found or range is 0")
+            return None
+        
+        maxValue = row[0]
+        minValue = row[1]
+        print(f"max: {maxValue}, min: {minValue}")
+        
+        range_value = maxValue - minValue
+        print(f"Range value: {range_value}")
+        
+        if range_value == 0:
+            print("Error: Range = 0")
+            return None
+        else:
+            return range_value
+            
             
                 
             
@@ -632,9 +744,9 @@ class Retrieve_Data:
 
 ##Instantiate a QtApplication
 app = QApplication(sys.argv)
-##Set the active window to the main window we have been working with
-window = View_Data_Window()
+##Set the active window to an instance of this class
+view_data_window = View_Data_Window()
 ##Open the window maximized (Windowed FullScreen)
-window.showMaximized()
+view_data_window.showMaximized()
 ##Run the application
 sys.exit(app.exec())
