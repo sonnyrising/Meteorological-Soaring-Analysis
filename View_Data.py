@@ -1,5 +1,15 @@
 import sys
 
+from datetime import(
+    datetime,
+    timedelta,
+)
+
+import numpy as np
+
+##Used to query the database
+import sqlite3
+
 ##Import classes from my own custom UI Elements
 from Custom_UI_Elements import (
     Menu_Button,
@@ -9,7 +19,6 @@ from Custom_UI_Elements import (
     SubTitle,
     data_options,
     error_message,
-    MplCanvas,
     MplCanvas,
 )
 
@@ -21,8 +30,6 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QCheckBox,
-    QLabel,
-    QCheckBox,
 )
 
 from PyQt6.QtGui import QIcon
@@ -30,24 +37,26 @@ from PyQt6.QtGui import QIcon
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 import matplotlib.dates as mdates
-import matplotlib.dates as mdates
 
 from Drop_Down_Options import options
-from lookup_tables import lookup_tables
+
+##Mehtods to retrieve data from database /api and input validation
+from MSA_Utils import (
+    Retrieve_Data,
+    inputValidation,
+)
 
 class View_Data_Window(QMainWindow):
 
     def __init__(self):
         ##Inherits from QMainWindow, the window class from the PyQt library
         super().__init__()
-        
-        self.normalised = True
 
         self.setWindowTitle("Meteorological Soaring Analysis")
         self.setWindowIcon(QIcon("logo.png"))
         
         ##Instantiate both layouts as a widget
-        main_widget = QWidget()
+        MainWidget = QWidget()
         
         ##Creates the title bar using the custom title class
         title_bar = Title("Meterological Soaring Analysis")
@@ -96,16 +105,13 @@ class View_Data_Window(QMainWindow):
         ##Create a layout for the lower part of the window below the title
         main_contents_layout = QHBoxLayout()
         
-        
         left_third_layout = QVBoxLayout()
         
         ##Add the user inputs for each graph
         self.data_options_A = data_options("Line A:")
         self.line_B_checkbox = QCheckBox('Plot Second Line', self)
-        self.line_B_checkbox = QCheckBox('Plot Second Line', self)
         self.data_options_B = data_options("Line B:")
         left_third_layout.addWidget(self.data_options_A)
-        left_third_layout.addWidget(self.line_B_checkbox)
         left_third_layout.addWidget(self.line_B_checkbox)
         left_third_layout.addWidget(self.data_options_B)
         
@@ -113,22 +119,14 @@ class View_Data_Window(QMainWindow):
         plot_button = Menu_Button(
             text = 'Plot Graph',
             color = '#7ED941',
-            subroutine = self.validate_data
+            subroutine = self.plot_graph
         )
 
         ##Set the maximum size of the plot button
         plot_button.setMaximumSize(200, 30)
         
-        ##Create a layout to hold the buttons
-        button_layout = QHBoxLayout()
-        button_layout.addWidget(plot_button)
-        button_layout.addWidget(self.export_button)
-
-        ##Add to the input layout
-        left_third_layout.addLayout(button_layout)
-        
-        ##Hide the export button if there is no graph to export
-        self.export_button.hide()
+        ##Create a layout to hold all of the inputs
+        left_third_layout.addWidget(plot_button)
         
         ##Add the user inputs held on the left of the screen
         main_contents_layout.addLayout(left_third_layout)
@@ -138,51 +136,46 @@ class View_Data_Window(QMainWindow):
         
         # Create the maptlotlib FigureCanvas object,
         # which defines a single set of axes as self.axes.
-        sc = MplCanvas(self, width=5, height=4, dpi=100)
-        sc.axes.plot([12, 45, 106, 15, 24], [10,1,20,3,40])
+        self.sc = MplCanvas(self, width=5, height=4, dpi=100)
+        self.sc.axes.plot([12, 45, 106, 15, 24], [10,1,20,3,40])
+        self.sc.hide()
 
-        main_contents_layout.addWidget(sc)
+        main_contents_layout.addWidget(self.sc)
         
         main_layout.addLayout(main_contents_layout)
                      
         ##Set the layout for the main widget
-        main_widget.setLayout(main_layout)
+        MainWidget.setLayout(main_layout)
         
         ##Set the main widget as the central widget of the main window
-        self.setCentralWidget(main_widget)
+        self.setCentralWidget(MainWidget)
 
     def logo_clicked(self):
         ##Create a dialogue box for quit to main menu confirmation
         ##Parameter 1 is the window title
         ##Parameter 2 is the statement in the dialogue box
-        quit_dialogue = Conf_Dialogue("Quit to Menu",
+        quitDialogue = Conf_Dialogue("Quit to Menu",
                                      "Are you sure you want to quit to the Main Menu?"
                                 )
-        if quit_dialogue.exec():
+        if quitDialogue.exec():
             ##If the user clicks yes in the dialogue box, the application will quit
             import Main_Menu
-            self.main_window = Main_Menu.main_window()
-            self.main_window.showMaximized()
+            self.mainWindow = Main_Menu.MainWindow()
+            self.mainWindow.showMaximized()
             self.close()
         else:
             ##If the user clicks cancel in the dialogue box, the application will continue running
             print("Cancel")
             
-    def export_graph(self):
-        self.sc.figure.savefig('Saved Graph.png')
-
-            
     def test(self):
         print("Test")
+    
+    ##Subroutine called when the plot graph button is clicked
+    ##The first step to plotting the graph
+    def validate_data(self):
+        ##A flag to indicate whether inputs have been validated
+        validation_passed = False
         
-    def export_graph(self):
-        self.sc.figure.savefig("graph.png")
-            
-    def plot_graph(self):
-        ##Display the export button
-        self.export_button.show()
-        
-        lineB = False
         ##Check if the user wishes to plot a second line
         if self.line_B_checkbox.isChecked():
             lineB = True
@@ -195,18 +188,12 @@ class View_Data_Window(QMainWindow):
         inputsB = self.data_options_B.getInputs()
         
         ##Extracts start and end dates from the dictionary
-        if lineB:
-            start_dates = [inputsA['start_date'], inputsB['start_date']]
-            end_dates = [inputsA['end_date'], inputsB['end_date']]
-        else:
-            start_dates = [inputsA["start_date"]]
-            end_dates = [inputsA["end_date"]]
+        start_dates = [inputsA['start_date'], inputsB['start_date']]
+        end_dates = [inputsA['end_date'], inputsB['end_date']]
         
-        ##Create an instance of the data validation class for inputs A
-        validateA = input_validation(start_dates[0], end_dates[0])
-        if lineB:
-            ##Create an instance of the data validation class for inputs B
-            validateB = input_validation(start_dates[1], end_dates[1])
+        ##Create an instance of input validation to the current inputs for line A
+        input_validation_A = inputValidation(start_dates[0], end_dates[0])
+        validation_result_A = input_validation_A.validateDate()
         
         ##If the validation class returns True, the input is valid
         if validation_result_A == True:
@@ -225,26 +212,28 @@ class View_Data_Window(QMainWindow):
             popup.exec()
             validation_passed = False
         
-        ##Create an instance of input validation to the current inputs for line B
-        input_validation_B = inputValidation(start_dates[1], end_dates[1])
-        validation_result_B = input_validation_B.validateDate()
+        ##Only validate input B if the user is plotting them:
+        if lineB:
+            ##Create an instance of input validation to the current inputs for line B
+            input_validation_B = inputValidation(start_dates[1], end_dates[1])
+            validation_result_B = input_validation_B.validateDate()
 
-        if validation_result_B == True:
-            ##Set passed to true
-            validation_passed = True
-        elif validation_result_B == "end_date before start_date":
-            ##The end date is before the start date
-            ##Create a popup to inform the user
-            popup = error_message("Error in Line B", "End Date before Start Date")
-            popup.exec()
-            validation_passed = False
-        elif validation_result_B == "start_date = end_date":
-            ##The end date is equal to the start date
-            ##Create a popup to inform the user
-            print ("start_date = end_date")
-            popup = error_message("Error in Line B", "End Date equal to Start Date")
-            popup.exec()
-            validaton_passed = False
+            if validation_result_B == True:
+                ##Set passed to true
+                validation_passed = True
+            elif validation_result_B == "end_date before start_date":
+                ##The end date is before the start date
+                ##Create a popup to inform the user
+                popup = error_message("Error in Line B", "End Date before Start Date")
+                popup.exec()
+                validation_passed = False
+            elif validation_result_B == "start_date = end_date":
+                ##The end date is equal to the start date
+                ##Create a popup to inform the user
+                print ("start_date = end_date")
+                popup = error_message("Error in Line B", "End Date equal to Start Date")
+                popup.exec()
+                validation_passed = False
         
         
         ##Validation has been passed, return true
@@ -274,7 +263,7 @@ class View_Data_Window(QMainWindow):
             end_dates = [inputsA["end_date"]]
         
         ##Only plot the graph if the inputs are valid
-        if self.validate_data(start_dates, end_dates) != True:
+        if self.validate_data() != True:
             return(False)
         
         ##Create an instance of data retrieval
@@ -304,19 +293,24 @@ class View_Data_Window(QMainWindow):
         pointsB = None
         
         ##Call the correct subroutine based on if the user has requested weather or flight data
+        ##If the user has selected line B retrieve the data for both A and B
         if lineB:
+            ##If the condition is flight data then an sql query is needed
             if inputsA['condition'] in self.flight_data:
                 print("flight")
-                pointsA = retriever.retrieve_flights('A')   
+                pointsA = retriever.retrieve_flights('A') 
+            ##If the condition is weather data then an API request is needed  
             elif inputsA['condition'] in self.weather_data:
                 print("weather")
                 pointsA = retriever.retrieve_weather('A')
             
+            ##Repeaat fo line B
             if inputsB['condition'] in self.flight_data:
                 pointsB = retriever.retrieve_flights('B')
             elif inputsB['condition'] in self.weather_data:
                 pointsB = retriever.retrieve_weather('B')
-                
+        
+        ##If the user only wants line A don't retrieve data for line B
         else:
             if inputsA['condition'] in self.flight_data:
                 pointsA = retriever.retrieve_flights('A') 
@@ -332,7 +326,7 @@ class View_Data_Window(QMainWindow):
         if pointsA is None:
             print("Error: No data retrieved for Line A")
             return False
-        
+        ##Only check for line B if it is needed
         if lineB and pointsB is None:
             print("Error: No data retrieved for Line B")
             return False
@@ -465,358 +459,12 @@ class View_Data_Window(QMainWindow):
         
         self.sc.show()
         self.sc.draw()
-        
-        
-##A class to handle validating user inputs  
-class inputValidation:
-    def __init__(self, Pstart_date, Pend_date):
-        self.start_date = Pstart_date
-        self.end_date = Pend_date
-    
-    def validateDate(self):
-        ##Due to the QDateEdit widget, the date is already in the correct format
-        ##Minimum and maximum dates are set by the QDateEdit widget so dont need to be validated
-        
-        ##Check if dates are in the correct order
-        ##ie cant end before it starts
-        if self.start_date  < self.end_date:
-            return(True)
-        
-        ##Check if the start date is before the end date
-        elif self.start_date > self.end_date:
-            ##Return an appropriate error message to trigger a popup
-            return "end_date before start_date"
-        
-        ##Check if the start date is the same as the end date
-        else:
-            return "start_date = end_date"
-
-##A class to handle retrieving data from the flights database
-##and weather API
-class Retrieve_Data:
-    def __init__(self):
-        self.inputsA = self.data_options_A.getInputs()
-        self.inputsB = self.data_options_B.getInputs()
-        
-    ##Retrieve the data from the flight database
-    def retrieve_flights(self, A_or_B):
-        ##Retrieve data with the parameters from the correct input
-        if A_or_B == 'A':
-            inputs = self.inputsA
-        elif A_or_B == 'B':
-            inputs = self.inputsB
-        else:
-            return False
-        
-        start_date = inputs['start_date'].toString("yyyy-MM-dd")
-        end_date = inputs['end_date'].toString("yyyy-MM-dd")
-        condition = inputs['condition']
-        region = inputs['region']
-        
-        ##Use the lookup table in lookup_tables to convert the
-        ##Drop Down titles into field headings
-        lookupObject = lookup_tables()
-        condition = lookupObject.conditionLookup[condition]
-        
-        ##Create an SQL query to retrieve this data from the db
-        query = (f'''SELECT Date, [{condition}]
-                    FROM flights
-                    WHERE Region = '{region}' 
-                    AND DateConverted BETWEEN '{start_date}' 
-                    AND '{end_date}'
-                    ORDER BY DateConverted ASC
-                    ''')            
-    
-        ##Open the database temporarily ensuring it is closed when finished with
-        with sqlite3.connect('MSA.db', timeout=30) as conn:
-            ##Create an instance of cursor
-            cursor = conn.cursor()
-            ##Execute the query defined earlier
-            cursor.execute(query)
-            ##Fetch the data returned
-            rows = cursor.fetchall()
-            
-            ## Convert the date format from dd-mm-yyyy to yyyy-mm-dd
-            formatted_rows = []
-            for row in rows:
-                date = datetime.strptime(row[0], "%d-%m-%Y").strftime("%Y-%m-%d")
-                formatted_rows.append((date, row[1]))
-
-            return formatted_rows
-        
-    ##A subroutine to retrieve historic weather data
-    ##from the open-meteo API
-    def retrieve_weather(self, A_or_B):
-        ##Import the necessary libraries for the API
-        import openmeteo_requests
-        import requests_cache
-        import pandas as pd
-        from retry_requests import retry    
-        
-        ## Setup the Open-Meteo API client with cache and retry on error
-        cache_session = requests_cache.CachedSession('.cache', expire_after = 3600)
-        retry_session = retry(cache_session, retries = 5, backoff_factor = 0.2)
-        openmeteo = openmeteo_requests.Client(session = retry_session)
-        
-        ##Retrieve data with the parameters from the correct input
-        if A_or_B == 'A':
-            inputs = self.inputsA
-        elif A_or_B == 'B':
-            inputs = self.inputsB
-        else:
-            return False
-        
-        start_date = inputs['start_date'].toString("yyyy-MM-dd")
-        end_date = inputs['end_date'].toString("yyyy-MM-dd")
-        condition = inputs['condition']
-        region = inputs['region']
-        
-        
-        ##Create an instance of lookup_tables
-        lookupObject = lookup_tables()
-        
-        ##Get the coordinates of the users region
-        regionCoord = lookupObject.region_lookup[region]
-        
-        ##Get the API request for the user's condition
-        APIcondition = lookupObject.conditionLookup[condition]
-
-        ##Set the URL of the API
-        url = "https://archive-api.open-meteo.com/v1/archive"
-        
-        ##Set the parameters for the request
-        params = {
-            "latitude" : regionCoord[1],
-            "longitude" : regionCoord[0],
-            "start_date" : start_date,
-            "end_date" : end_date,
-            "hourly": APIcondition
-        }
-        
-        responses = openmeteo.weather_api(url, params=params)
-
-        # Process first location. Add a for-loop for multiple locations or weather models
-        response = responses[0]
-        print(f"Coordinates {response.Latitude()}°N {response.Longitude()}°E")
-        print(f"Elevation {response.Elevation()} m asl")
-        print(f"Timezone {response.Timezone()} {response.TimezoneAbbreviation()}")
-        print(f"Timezone difference to GMT+0 {response.UtcOffsetSeconds()} s")
-
-        # Process hourly data. The order of variables needs to be the same as requested.
-        hourly = response.Hourly()   
-        condition = hourly.Variables(0).ValuesAsNumpy()               
-        
-        hourly_data = {"date": pd.date_range(
-        start = pd.to_datetime(hourly.Time(), unit = "s", utc = True),
-        end = pd.to_datetime(hourly.TimeEnd(), unit = "s", utc = True),
-        freq = pd.Timedelta(seconds = hourly.Interval()),
-        inclusive = "left"
-            )
-        }
-
-        hourly_data["condition"] = condition
-
-        hourly_dataframe = pd.DataFrame(data = hourly_data)
-        
-        averages = self.dailyAverage(hourly_dataframe)
-        
-        return averages
-        
-        
-        
-    ##Find daily average temp
-    ##(Between 10:00 and 17:00)
-    def dailyAverage(self, hourly_dataframe):
-        averages = []
-        ##Iterate through each day
-        for i in range(0, len(hourly_dataframe), 24):
-            sum = 0
-            ##Iterate through each hour between 10:00 and 17:00
-            for j in range(10, 18):
-                ##Sum the values for each hour
-                sum += hourly_dataframe.loc[i + j, "condition"]
-                ##Convert the date to a string
-                ##*(Must be in YYYY-MM-DD format to support plot_graph)
-                date_str = hourly_dataframe.loc[i, "date"].strftime("%Y-%m-%d")
-                ##Add the date and average to an array
-                averages.append([date_str, sum / 8])
-            
-        ##Return the array in a format supported by the plot_graph subroutine
-        return(averages)
-    
-    
-    ##When plotting 2 dissimilar conditions data must be normalised
-    def normaliseData(self, valuesA, valuesB, inputsA, inputsB):
-        ##Find ranges for both inputs
-        if inputsA["condition"] in view_data_window.flight_data:
-            conditionA_range = self.find_range_sql(inputsA)
-        else:
-            conditionA_range = self.find_range_api(inputsA)
-        
-        if inputsB["condition"] in view_data_window.flight_data:
-            conditionB_range = self.find_range_sql(inputsB)
-        else:
-            conditionB_range = self.find_range_api(inputsB)
-            
-            
-            
-                    
-        ##For each data point, convert it to a percentage of that condition's range
-        ##Use error checking since some values from the db may return Null
-        for i in range(len(valuesA)):
-            try:
-                valuesA[i] = list(valuesA[i])  # Convert tuple to list
-                valuesA[i][1] = (float(valuesA[i][1]) / conditionA_range) * 100
-            except ValueError as e:
-                print(f"Skipping invalid data point in valuesA: {valuesA[i]} - {e}")
-                continue
-        
-        for i in range(len(valuesB)):
-            try:
-                valuesB[i] = list(valuesB[i])  # Convert tuple to list
-                valuesB[i][1] = (float(valuesB[i][1]) / conditionB_range) * 100
-            except ValueError as e:
-                print(f"Skipping invalid data point in valuesB: {valuesB[i]} - {e}")
-                continue
-        
-        ##Return the normalised values
-        values = (valuesA, valuesB)
-        return values
-            
-            
-    def find_range_sql(self, inputs):
-        condition = inputs["condition"]
-        ##Convert to the column heading used in the db
-        lookup_object = lookup_tables()
-        condition = lookup_object.conditionLookup[condition]
-
-        ##SQL Query to find the range of values for that condition for the whole country from 2010 to 2024
-        query = (f'''SELECT
-                    MAX(CAST("{condition}" AS REAL)) AS max_value, 
-                    MIN(CAST("{condition}" AS REAL)) AS min_value
-                    FROM flights
-                    WHERE DateConverted BETWEEN '2010-01-01' AND '2024-12-31';''')
-        
-        print(f"Executing query: {query}")
-        
-        ##Open the database temporarily ensuring it is closed when finished with
-        with sqlite3.connect('MSA.db', timeout=30) as conn:
-            ##Create an instance of cursor
-            cursor = conn.cursor()
-            ##Execute the query defined earlier
-            cursor.execute(query)
-            ##Fetch the data returned
-            row = cursor.fetchone()
-            
-        if row is None or row[0] is None or row[1] is None:
-            print("Error: No data found or range is 0")
-            return None
-        
-        maxValue = row[0]
-        minValue = row[1]
-
-        
-        range_value = maxValue - minValue
-
-        
-        if range_value == 0:
-            print("Error: Range = 0")
-            return None
-        else:
-            return range_value
-            
-            
-    def find_range_api(self, inputs):
-        ##Import the necessary libraries for the API
-        import openmeteo_requests
-        import requests_cache
-        import pandas as pd
-        from retry_requests import retry    
-        
-        ## Setup the Open-Meteo API client with cache and retry on error
-        cache_session = requests_cache.CachedSession('.cache', expire_after = 3600)
-        retry_session = retry(cache_session, retries = 5, backoff_factor = 0.2)
-        openmeteo = openmeteo_requests.Client(session = retry_session)
-        
-        condition = inputs["condition"]
-        region = inputs["region"]
-        ##Convert to the column heading used in the db
-        lookupObject = lookup_tables()
-        condition = lookupObject.conditionLookup[condition]
-        
-        ##Get the coordinates of the users region
-        regionCoord = lookupObject.region_lookup[region]
-
-        ##Set the URL of the API
-        url = "https://archive-api.open-meteo.com/v1/archive"
-        
-        ##Set the parameters for the request
-        params = {
-            "latitude" : regionCoord[1],
-            "longitude" : regionCoord[0],
-            "start_date" : "2010-01-01",
-            "end_date" : "2024-12-31",
-            "hourly": condition
-        }
-        
-        responses = openmeteo.weather_api(url, params=params)
-
-        # Process first location. Add a for-loop for multiple locations or weather models
-        response = responses[0]
-        print(f"Coordinates {response.Latitude()}°N {response.Longitude()}°E")
-        print(f"Elevation {response.Elevation()} m asl")
-        print(f"Timezone {response.Timezone()} {response.TimezoneAbbreviation()}")
-        print(f"Timezone difference to GMT+0 {response.UtcOffsetSeconds()} s")
-
-        # Process hourly data. The order of variables needs to be the same as requested.
-        hourly = response.Hourly()   
-        condition = hourly.Variables(0).ValuesAsNumpy()               
-        
-        hourly_data = {"date": pd.date_range(
-        start = pd.to_datetime(hourly.Time(), unit = "s", utc = True),
-        end = pd.to_datetime(hourly.TimeEnd(), unit = "s", utc = True),
-        freq = pd.Timedelta(seconds = hourly.Interval()),
-        inclusive = "left"
-            )
-        }
-
-        hourly_data["condition"] = condition
-
-        hourly_dataframe = pd.DataFrame(data = hourly_data)
-        
-        min_value = hourly_dataframe["condition"].min()
-        max_value = hourly_dataframe["condition"].max()
-        condition_range = max_value - min_value
-        return condition_range
-        
-        
-        
-        
-            
-                
-            
-
-                
-                
-            
- 
-            
-        
-        
-
-        
-    
-        
-
-        
-        
-
-
-##Instantiate a QtApplication
-app = QApplication(sys.argv)
-##Set the active window to an instance of this class
-view_data_window = View_Data_Window()
-##Open the window maximized (Windowed FullScreen)
-view_data_window.showMaximized()
-##Run the application
-sys.exit(app.exec())
+         
+# ##Instantiate a QtApplication
+# app = QApplication(sys.argv)
+# ##Set the active window to an instance of this class
+# view_data_window = View_Data_Window()
+# ##Open the window maximized (Windowed FullScreen)
+# view_data_window.showMaximized()
+# ##Run the application
+# sys.exit(app.exec())
