@@ -50,7 +50,7 @@ class MainWindow(QMainWindow):
                                       subroutine = self.view_data))
         vLayout.addWidget(Menu_Button(text = 'Run Analysis',
                                       color = '#7ED941',
-                                      subroutine = self.test))
+                                      subroutine = self.run_analysis))
         vLayout.addWidget(Menu_Button(text = 'Info',
                                       color = '#7ED941',
                                       subroutine = self.show_info))
@@ -184,11 +184,27 @@ class MainWindow(QMainWindow):
         self.info_widget.setText("")
         self.closeButton.hide()
         self.info_shown = False
-        
+    
+    ##Opens the view data window
     def view_data(self):
+        ##Imports the window class
         import View_Data
+        ##Creates an instance of the window
         self.view_data_window = View_Data.View_Data_Window()
+        ##Opens the window full screen
         self.view_data_window.showMaximized()
+        ##Closes the main menu
+        self.close()
+
+    ##Opens the view data window
+    def run_analysis(self):
+        ##Imports the window class
+        import Analyse_Data
+        ##Creates an instance of the window
+        self.analyse_data_window = Analyse_Data.Analyse_Data_Window()
+        ##Opens the window full screen
+        self.analyse_data_window.showMaximized()
+        ##Closes the main menu
         self.close()
         
         

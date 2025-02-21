@@ -1,14 +1,13 @@
 import sys
 
+##Used to ensure dates are in correct format for matplotlib
 from datetime import(
     datetime,
     timedelta,
 )
 
+##Used for numerical methods for matplotlib graphs
 import numpy as np
-
-##Used to query the database
-import sqlite3
 
 ##Import classes from my own custom UI Elements
 from Custom_UI_Elements import (
@@ -22,22 +21,27 @@ from Custom_UI_Elements import (
     MplCanvas,
 )
 
+##PyQt Widgets
 from PyQt6.QtWidgets import (
     QApplication,
     QMainWindow,
     QWidget,
     QVBoxLayout,
     QHBoxLayout,
-    QLabel,
     QCheckBox,
 )
 
+##PyQt GUI Element (used for images)
 from PyQt6.QtGui import QIcon
 
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+##Used to plot graphs with matplotlib
 from matplotlib.figure import Figure
 import matplotlib.dates as mdates
 
+##Integrates matplotlib with PyQt
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+
+##List of options in drop down menu
 from Drop_Down_Options import options
 
 ##Mehtods to retrieve data from database /api and input validation
@@ -46,7 +50,7 @@ from MSA_Utils import (
     inputValidation,
 )
 
-class View_Data_Window(QMainWindow):
+class Analyse_Data_Window(QMainWindow):
 
     def __init__(self):
         ##Inherits from QMainWindow, the window class from the PyQt library
@@ -64,7 +68,7 @@ class View_Data_Window(QMainWindow):
         
         ##Creates the subtitle bar using the custom subtitle class
         ##Slightly smaller than the title bar
-        subtitle_bar = SubTitle("View Data", 36)
+        subtitle_bar = SubTitle("Analyse Data", 36)
         subtitle_bar.setMaximumHeight(30)
         
         ##Creates a blue background to hold the title and subtitle
@@ -130,10 +134,7 @@ class View_Data_Window(QMainWindow):
         
         ##Add the user inputs held on the left of the screen
         main_contents_layout.addLayout(left_third_layout)
-        
 
-        
-        
         # Create the maptlotlib FigureCanvas object,
         # which defines a single set of axes as self.axes.
         self.sc = MplCanvas(self, width=5, height=4, dpi=100)
@@ -149,6 +150,7 @@ class View_Data_Window(QMainWindow):
         
         ##Set the main widget as the central widget of the main window
         self.setCentralWidget(MainWidget)
+
 
     def logo_clicked(self):
         ##Create a dialogue box for quit to main menu confirmation
@@ -166,9 +168,11 @@ class View_Data_Window(QMainWindow):
         else:
             ##If the user clicks cancel in the dialogue box, the application will continue running
             print("Cancel")
+          
             
     def test(self):
         print("Test")
+    
     
     ##Subroutine called when the plot graph button is clicked
     ##The first step to plotting the graph
@@ -239,7 +243,7 @@ class View_Data_Window(QMainWindow):
         ##Validation has been passed, return true
         if validation_passed == True:
             return True
-            
+           
             
     def plot_graph(self):
         lineB = False
@@ -331,7 +335,6 @@ class View_Data_Window(QMainWindow):
             print("Error: No data retrieved for Line B")
             return False
         
-        
         ##Convert the values for A into a numpy array
         ##Convert dates from DD-MM-YYYY to YYYY-MM-DD
         ##To support the matplotlib date format
@@ -360,24 +363,25 @@ class View_Data_Window(QMainWindow):
         if lineB:
             self.normalised = True
             if (inputsA["condition"] != inputsB["condition"]):
+                ##Call the normalisation method
+                ##Passing in the datapoints to be normalised
                 normalised_data = retriever.normaliseData(
-                    valuesA=pointsA,
-                    valuesB=pointsB,
-                    inputsA=inputsA,
-                    inputsB=inputsB
+                    pointsA,
+                    pointsB,
+                    inputsA,
+                    inputsB
                 )
-                # Update valuesA for all its data points
+                
+                ##Set all of the data in valuesA to be its normalised form
                 for i in range(len(normalised_data[0])):
                     valuesA[i] = normalised_data[0][i][1]
                 
-                # Update valuesB for all its data points
+                ##Set all of the data in valuesB to be its normalised form
                 for i in range(len(normalised_data[1])):
                     valuesB[i] = normalised_data[1][i][1]
-                    
-                    
-                    
+                      
             else:
-                # When conditions are the same, no normalization is needed.
+                ## When conditions are the same, no normalization is needed.
                 pass
                 
             
@@ -463,7 +467,7 @@ class View_Data_Window(QMainWindow):
 # ##Instantiate a QtApplication
 # app = QApplication(sys.argv)
 # ##Set the active window to an instance of this class
-# view_data_window = View_Data_Window()
+# view_data_window = Analyse_Data_Window()
 # ##Open the window maximized (Windowed FullScreen)
 # view_data_window.showMaximized()
 # ##Run the application
