@@ -9,17 +9,13 @@ from datetime import(
     datetime,
 )
 
-from Custom_UI_Elements import (
-    error_message
-)
-
 ##A class to handle validating user inputs  
-class input_validation:
+class inputValidation:
     def __init__(self, start_date, end_date):
         self.start_date = start_date
         self.end_date = end_date
     
-    def validate_date(self):
+    def validateDate(self):
         ##Due to the QDateEdit widget, the date is already in the correct format
         ##Minimum and maximum dates are set by the QDateEdit widget so dont need to be validated
         
@@ -30,29 +26,20 @@ class input_validation:
         
         ##Check if the start date is before the end date
         elif self.start_date > self.end_date:
-            ##Trigger a popup
-            popup = error_message("Error in Date Input", "End Date before Start Date")
-            popup.exec()
-            ##Return an appropriate error message
+            ##Return an appropriate error message to trigger a popup
             return "end_date before start_date"
         
         ##Check if the start date is the same as the end date
         else:
-            ##Trigger a popup
-            popup = error_message("Error in Date Input", "End Date equal to Start Date")
-            popup.exec()
-            ##Return an appropriate error message
             return "start_date = end_date"
 
 ##A class to handle retrieving data from the flights database
 ##and weather API
 class Retrieve_Data:
-    def __init__(self, data_options_A, data_options_B, view_data):
+    def __init__(self, data_options_A, data_options_B):
         ##Retrieve user inputs from the inputs widet
         self.inputsA = data_options_A.getInputs()
-        ##Only retrieve inputs from the second line if it is needed
-        if view_data:
-            self.inputsB = data_options_B.getInputs()
+        self.inputsB = data_options_B.getInputs()
 
         ##Arrays to check whether a condition is for flight or weather
         self.flight_data = [
@@ -89,9 +76,7 @@ class Retrieve_Data:
         end_date = inputs['end_date'].toString("yyyy-MM-dd")
         
         condition = inputs['condition']
-        ##Split the region drop down into just the region
-        ##Remove the gliding club
-        region = inputs['region'].split(' - ')[0]
+        region = inputs['region']
         
         ##Use the lookup table in lookup_tables to convert the
         ##Drop Down titles into field headings
@@ -105,15 +90,10 @@ class Retrieve_Data:
                     AND DateConverted BETWEEN '{start_date}' 
                     AND '{end_date}'
                     ORDER BY DateConverted ASC
-                    ''')      
-        
-        print(f"Making query \n query: {query}")      
+                    ''')            
     
         ##Open the database temporarily ensuring it is closed when finished with
-        with sqlite3.connect(
-            r'C:\Users\sonny\OneDrive\Documents\GitHub\Meteorological-Soaring-Analysis\MSA2',
-            timeout=30
-            ) as conn:
+        with sqlite3.connect('MSA.db', timeout=30) as conn:
             ##Create an instance of cursor
             cursor = conn.cursor()
             ##Execute the query defined earlier
@@ -129,8 +109,6 @@ class Retrieve_Data:
                 date = datetime.strptime(row[0], "%d-%m-%Y").strftime("%Y-%m-%d")
                 ##Add the formated rows to the new array
                 formatted_rows.append((date, row[1]))
-                
-            print(f"Data Accessed \n length: {len(formatted_rows)}")
 
             ##Return the sql query result with correctly formated dates
             return formatted_rows
@@ -162,9 +140,7 @@ class Retrieve_Data:
         start_date = inputs['start_date'].toString("yyyy-MM-dd")
         end_date = inputs['end_date'].toString("yyyy-MM-dd")
         condition = inputs['condition']
-        ##Split the region drop down into just the region
-        ##Remove the gliding club
-        region = inputs['region'].split(' - ')[0]
+        region = inputs['region']
         
         
         ##Create an instance of lookup_tables
@@ -217,7 +193,6 @@ class Retrieve_Data:
 
         ##Add the values of the requested condition to the dictionary
         hourly_data["condition"] = condition
-        print(f"Hourly Data Accessed \n length: {len(hourly_data['condition'])}")
 
         ##Convert the dictionary to a pandas dataframe
         ##The df is more human readable for debugging
@@ -225,7 +200,6 @@ class Retrieve_Data:
         
         ##Convert hourly data into daily averages
         averages = self.dailyAverage(hourly_dataframe)
-        print(f"Averages found \n length: {len(averages)}")
         
         ##Return these averages
         return averages
@@ -246,8 +220,8 @@ class Retrieve_Data:
                 ##Convert the date to a string
                 ##*(Must be in YYYY-MM-DD format to support plot_graph)
                 date_str = hourly_dataframe.loc[i, "date"].strftime("%Y-%m-%d")
-            ##Add the date and average to an array
-            averages.append([date_str, sum / 8])
+                ##Add the date and average to an array
+                averages.append([date_str, sum / 8])
             
         ##Return the array in a format supported by the plot_graph subroutine
         return(averages)
@@ -366,9 +340,7 @@ class Retrieve_Data:
         openmeteo = openmeteo_requests.Client(session = retry_session)
         
         condition = inputs["condition"]
-        ##Split the region drop down into just the region
-        ##Remove the gliding club
-        region = inputs['region'].split(' - ')[0]
+        region = inputs["region"]
         ##Convert to the column heading used in the db using the lookup table
         lookupObject = lookup_tables()
         condition = lookupObject.conditionLookup[condition]
@@ -436,7 +408,4 @@ class Retrieve_Data:
         else:
             print("Error: API range = 0")
             return None
-        
-        
-
             
