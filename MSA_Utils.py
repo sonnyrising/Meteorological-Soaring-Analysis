@@ -97,13 +97,15 @@ class Retrieve_Data:
         condition = lookupObject.conditionLookup[condition]
         
         ##Create an SQL query to retrieve this data from the db
-        query = (f'''SELECT Date, [{condition}]
-                    FROM flights
-                    WHERE Region = '{region}' 
-                    AND DateConverted BETWEEN '{start_date}' 
-                    AND '{end_date}'
-                    ORDER BY DateConverted ASC
-                    ''')      
+        ##Retrieve the average value of each day
+        query = (f'''SELECT DateConverted, AVG([{condition}]) 
+                FROM flights
+                WHERE Region = '{region}' 
+                AND DateConverted BETWEEN '{start_date}' 
+                AND '{end_date}'
+                GROUP BY DateConverted
+                ORDER BY DateConverted ASC
+                ''')      
         
         print(f"Making query \n query: {query}")      
     
