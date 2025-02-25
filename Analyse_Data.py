@@ -283,6 +283,9 @@ class Analyse_Data_Window(QMainWindow):
         ##This ensures that every value datapoint has a corresponding score
         merged_df = pd.merge(points_df, score_df, on="date", how="inner")
         
+        ##Sort the merged dataframe by the condition
+        merged_df = merged_df.sort_values(by="points")  # Change to "score" if needed
+        
 
 
                    
