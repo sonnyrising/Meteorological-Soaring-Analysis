@@ -43,7 +43,7 @@ from Drop_Down_Options import options
 ##Mehtods to retrieve data from database /api and input validation
 from MSA_Utils import (
     Retrieve_Data,
-    inputValidation,
+    input_validation,
 )
 
 class View_Data_Window(QMainWindow):
@@ -171,77 +171,6 @@ class View_Data_Window(QMainWindow):
             
     def test(self):
         print("Test")
-    
-    ##Subroutine called when the plot graph button is clicked
-    ##The first step to plotting the graph
-    def validate_data(self):
-        ##A flag to indicate whether inputs have been validated
-        validation_passed = False
-        
-        ##Check if the user wishes to plot a second line
-        if self.line_B_checkbox.isChecked():
-            lineB = True
-        else:
-            lineB = False
-        
-        ##Use the getter method from the data options to retrieve user inputs
-        ##A dictionary is returned with the keys being the input type
-        inputsA = self.data_options_A.getInputs()
-        inputsB = self.data_options_B.getInputs()
-        
-        ##Extracts start and end dates from the dictionary
-        start_dates = [inputsA['start_date'], inputsB['start_date']]
-        end_dates = [inputsA['end_date'], inputsB['end_date']]
-        
-        ##Create an instance of input validation to the current inputs for line A
-        input_validation_A = inputValidation(start_dates[0], end_dates[0])
-        validation_result_A = input_validation_A.validateDate()
-        
-        ##If the validation class returns True, the input is valid
-        if validation_result_A == True:
-            ##Set passed to true
-            validation_passed = True
-        elif validation_result_A == "end_date before start_date":
-            ##The end date is before the start date
-            ##Create a popup to inform the user
-            popup = error_message("Error in Line A", "End Date before Start Date")
-            popup.exec()
-            validation_passed = False
-        elif validation_result_A == "start_date = end_date":
-            ##The end date is equal to the start date
-            ##Create a popup to inform the user
-            popup = error_message("Error in Line A", "Start Date equal to End Date")
-            popup.exec()
-            validation_passed = False
-        
-        ##Only validate input B if the user is plotting them:
-        if lineB:
-            ##Create an instance of input validation to the current inputs for line B
-            input_validation_B = inputValidation(start_dates[1], end_dates[1])
-            validation_result_B = input_validation_B.validateDate()
-
-            if validation_result_B == True:
-                ##Set passed to true
-                validation_passed = True
-            elif validation_result_B == "end_date before start_date":
-                ##The end date is before the start date
-                ##Create a popup to inform the user
-                popup = error_message("Error in Line B", "End Date before Start Date")
-                popup.exec()
-                validation_passed = False
-            elif validation_result_B == "start_date = end_date":
-                ##The end date is equal to the start date
-                ##Create a popup to inform the user
-                print ("start_date = end_date")
-                popup = error_message("Error in Line B", "End Date equal to Start Date")
-                popup.exec()
-                validation_passed = False
-        
-        
-        ##Validation has been passed, return true
-        if validation_passed == True:
-            return True
-            
             
     def plot_graph(self):
         lineB = False
@@ -264,12 +193,22 @@ class View_Data_Window(QMainWindow):
             start_dates = [inputsA["start_date"]]
             end_dates = [inputsA["end_date"]]
         
-        ##Only plot the graph if the inputs are valid
-        if self.validate_data() != True:
+        ##Create an instance of the data validation class for inputs A
+        validateA = input_validation(start_dates[0], end_dates[0])
+        if lineB:
+            ##Create an instance of the data validation class for inputs B
+            validateB = input_validation(start_dates[1], end_dates[1])
+        
+        #Only plot the graph if the date inputs are valid
+        if validateA.validate_date() != True or (lineB and validateB.validate_date() != True):
             return(False)
         
         ##Create an instance of data retrieval
-        retriever = Retrieve_Data(self.data_options_A, self.data_options_B)
+        retriever = Retrieve_Data(
+            data_options_A = self.data_options_A,
+            data_options_B = self.data_options_B,
+            view_data = True
+            )
         
         self.flight_data = [
             "Distance (km)",
@@ -462,11 +401,11 @@ class View_Data_Window(QMainWindow):
         self.sc.show()
         self.sc.draw()
          
-# ##Instantiate a QtApplication
-# app = QApplication(sys.argv)
-# ##Set the active window to an instance of this class
-# view_data_window = View_Data_Window()
-# ##Open the window maximized (Windowed FullScreen)
-# view_data_window.showMaximized()
-# ##Run the application
-# sys.exit(app.exec())
+##Instantiate a QtApplication
+app = QApplication(sys.argv)
+##Set the active window to an instance of this class
+view_data_window = View_Data_Window()
+##Open the window maximized (Windowed FullScreen)
+view_data_window.showMaximized()
+##Run the application
+sys.exit(app.exec())
