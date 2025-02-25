@@ -379,6 +379,48 @@ class MplCanvas(FigureCanvasQTAgg):
         ##Instantiate the FigureCanvas using the figure we created
         super().__init__(fig)
         
+        
+        
+##A class for the inputs for the analyse data window
+class analyse_options(QWidget):
+    def __init__(self):
+        super().__init__()
+        
+        ##Create a layout for the data options
+        layout = QVBoxLayout()
+        layout.setSpacing(0)
+
+        ##Create a widget to contain the inputs for graph A
+        graph_widget = QWidget()
+        graph_widget.setStyleSheet("background-color: transparent;")
+        graph_layout = QVBoxLayout()
+        graph_layout.setSpacing(5)
+        
+        
+        ##Create instantiations of each user input widget
+        self.start_input = date_input("start")
+        self.end_input = date_input("end")
+        self.region_input = drop_down_menu("region")
+        self.condition_input = drop_down_menu("condition")
+        
+        #Add each widget to the layout
+        graph_layout.addWidget(self.start_input)
+        graph_layout.addWidget(self.end_input)
+        graph_layout.addWidget(self.region_input)
+        graph_layout.addWidget(self.condition_input)
+
+        ##Set the layout for the widget
+        self.setLayout(graph_layout)
+     
+    ##A getter method to retrieve the inputs from the data options widget 
+    ##In the form of a dictionary 
+    def getInputs(self):
+        return {
+            "start_date" : self.start_input.getDate(), 
+            "end_date" : self.end_input.getDate(), 
+            "region" : self.region_input.getOption(), 
+            "condition" : self.condition_input.getOption(),
+        }
 
     
 
