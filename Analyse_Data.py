@@ -302,7 +302,7 @@ class Analyse_Data_Window(QMainWindow):
         self.sc.axes.tick_params(axis='x', which='major', labelsize=10)
         
         ##Set the y axis label
-        self.sc.axes.set_ylabel(inputsA['condition'])
+        self.sc.axes.set_ylabel('Total Score')
         
         ## Adjust the bottom margin to ensure the labels are visible
         self.sc.figure.subplots_adjust(bottom=0.2)
