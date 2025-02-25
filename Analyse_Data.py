@@ -36,6 +36,7 @@ from PyQt6.QtGui import QIcon
 
 ##Used to plot graphs with matplotlib
 from matplotlib.figure import Figure
+from matplotlib.ticker import MaxNLocator
 import matplotlib.dates as mdates
 
 ##Integrates matplotlib with PyQt
@@ -278,28 +279,57 @@ class Analyse_Data_Window(QMainWindow):
         points_df = pd.DataFrame(list(points.items()), columns=["date", "points"])
         score_df = pd.DataFrame(list(score.items()), columns=["date", "score"])
         
+        
         ##Merge the two dataframes on the date
         ##Merging on 'date' to get only matching entries
         ##This ensures that every value datapoint has a corresponding score
         merged_df = pd.merge(points_df, score_df, on="date", how="inner")
         
+        
         ##Sort the merged dataframe by the condition
-        merged_df = merged_df.sort_values(by="points")  # Change to "score" if needed
+        merged_df = merged_df.sort_values(by="points")
+        
+        ##Convert columns to numeric values, if they aren't already
+        merged_df['points'] = pd.to_numeric(merged_df['points'], errors='coerce')
+        merged_df['score'] = pd.to_numeric(merged_df['score'], errors='coerce')
+
+        ##Drop any rows where the conversion failed
+        merged_df = merged_df.dropna()
         
 
-
+        ##Calculate the equation of the line using the polyfit method of numpy
+        coefficients = np.polyfit(merged_df['points'], merged_df['score'], 4)
+        poly = np.poly1d(coefficients)
+        y_fit = poly(merged_df['points'])
                    
         ##Clear previous plots
         self.sc.axes.clear()
         
-        ##Plot the graph
-        self.sc.axes.plot( merged_df['points'], merged_df['score'], label=inputsA['condition'])
-            
+        # Plot the graph as a scatter graph with reduced opacity and changed color
+        self.sc.axes.scatter(
+            merged_df['points'],
+            merged_df['score'],
+            label=inputsA['condition'],
+            color='blue',
+            alpha=0.5      
+        )
 
-        ##Rotate the axis label by 45 degrees
+        # Plot the line of best fit with increased thickness
+        self.sc.axes.plot(
+            merged_df['points'],
+            y_fit,
+            label='Line of Best Fit',
+            color='red',   # Change this to your desired color
+            linewidth=2    # Adjust the line thickness
+        )
+            
+        ##Rotate the x axis label by 45 degrees
         self.sc.axes.set_xticklabels(self.sc.axes.get_xticklabels(), rotation=45, ha='right')
         ##Reduce size
         self.sc.axes.tick_params(axis='x', which='major', labelsize=10)
+        
+        # Control the number of ticks on the y-axis
+        self.sc.axes.yaxis.set_major_locator(MaxNLocator(integer=True))
         
         ##Set the y axis label
         self.sc.axes.set_ylabel('Total Score')
