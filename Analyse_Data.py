@@ -60,7 +60,7 @@ class Analyse_Data_Window(QMainWindow):
         self.setWindowIcon(QIcon("logo.png"))
         
         ##Instantiate both layouts as a widget
-        MainWidget = QWidget()
+        main_widget = QWidget()
         
         ##Creates the title bar using the custom title class
         title_bar = Title("Meterological Soaring Analysis")
@@ -146,24 +146,24 @@ class Analyse_Data_Window(QMainWindow):
         main_layout.addLayout(main_contents_layout)
                      
         ##Set the layout for the main widget
-        MainWidget.setLayout(main_layout)
+        main_widget.setLayout(main_layout)
         
         ##Set the main widget as the central widget of the main window
-        self.setCentralWidget(MainWidget)
+        self.setCentralWidget(main_widget)
 
 
     def logo_clicked(self):
         ##Create a dialogue box for quit to main menu confirmation
         ##Parameter 1 is the window title
         ##Parameter 2 is the statement in the dialogue box
-        quitDialogue = Conf_Dialogue("Quit to Menu",
+        quit_dialogue = Conf_Dialogue("Quit to Menu",
                                      "Are you sure you want to quit to the Main Menu?"
                                 )
-        if quitDialogue.exec():
+        if quit_dialogue.exec():
             ##If the user clicks yes in the dialogue box, the application will quit
             import Main_Menu
-            self.mainWindow = Main_Menu.MainWindow()
-            self.mainWindow.showMaximized()
+            self.main_window = Main_Menu.main_window()
+            self.main_window.showMaximized()
             self.close()
         else:
             ##If the user clicks cancel in the dialogue box, the application will continue running

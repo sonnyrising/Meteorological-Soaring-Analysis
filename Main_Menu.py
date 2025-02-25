@@ -25,7 +25,7 @@ from PyQt6.QtGui import (
 
 )
 
-class MainWindow(QMainWindow):
+class main_window(QMainWindow):
 
     def __init__(self):
         ##Inherits from QMainWindow, the window class from the PyQt library
@@ -96,17 +96,17 @@ class MainWindow(QMainWindow):
         self.scroll_area.setWidgetResizable(True)
         
         ##Create a button to close the info box
-        self.closeButton = QPushButton("Close Info")
-        self.closeButton.clicked.connect(self.close_info)
+        self.close_button = QPushButton("Close Info")
+        self.close_button.clicked.connect(self.close_info)
         
         ##Adds the scroll area (and the info label) to the layout
         hLayout.addWidget(self.scroll_area)
-        hLayout.addWidget(self.closeButton)
+        hLayout.addWidget(self.close_button)
         ##The close button is initially hidden, as the info is not yet shown
         if self.info_shown == False:
-            self.closeButton.hide()
+            self.close_button.hide()
         else:
-            self.closeButton.show()
+            self.close_button.show()
 
         ##Set the "button" area of the window (0th index) to take up 30% of the horizontal window space
         hLayout.setStretch(0, 2)
@@ -114,12 +114,12 @@ class MainWindow(QMainWindow):
         hLayout.setStretch(1,8)
         
         ##Instantiate both layouts as a widget
-        MainWidget = QWidget()
-        MainWidget.setLayout(hLayout)
+        main_widget = QWidget()
+        main_widget.setLayout(hLayout)
         
         ##Create a vertical box layout that will hold the title as its first box
         ##and the rest of the window as the second, lower box
-        titleLayout = QVBoxLayout()
+        title_layout = QVBoxLayout()
         
         # Create a container widget for the title and logo
         title_logo_container = QWidget()
@@ -152,27 +152,27 @@ class MainWindow(QMainWindow):
         title_logo_container.setMaximumHeight(100)
         
         ##Add the title and logo to the top of the window
-        titleLayout.addWidget(title_logo_container)
+        title_layout.addWidget(title_logo_container)
         
         ##Adds the main widget (containing buttons etc) below the title
-        titleLayout.addWidget(MainWidget)        
+        title_layout.addWidget(main_widget)        
         ##With the main widget added, the title layout can be considered to be the main
         ##(and only) layout
-        mainLayout = titleLayout
+        main_layout = title_layout
         
         ##Set the top widget (0th index) to take up 10% of the window
-        titleLayout.setStretch(0,1)
+        title_layout.setStretch(0,1)
         ##Therefore the 1st index must take up 90%
-        titleLayout.setStretch(1,29)
+        title_layout.setStretch(1,29)
         
         ##Instantiates a widget to contain the layouts
-        WindowWidget = QWidget()
+        window_widget = QWidget()
         
         ##Sets the layout of the widget to the layout created
-        WindowWidget.setLayout(mainLayout)
+        window_widget.setLayout(main_layout)
         
         ##Ensures the widget containing all of the window is centralised
-        self.setCentralWidget(WindowWidget)
+        self.setCentralWidget(window_widget)
     
     ##Used to test the buttons are working
     def test(self):
@@ -182,7 +182,7 @@ class MainWindow(QMainWindow):
     ##Giving the effect that it has been closed
     def close_info(self):
         self.info_widget.setText("")
-        self.closeButton.hide()
+        self.close_button.hide()
         self.info_shown = False
     
     ##Opens the view data window
@@ -235,7 +235,7 @@ class MainWindow(QMainWindow):
 app = QApplication(sys.argv)
 
 ##Set the active window to the main window we have been working with
-window = MainWindow()
+window = main_window()
 
 ##Open the window maximised (Windowed FullScreen)
 window.showMaximized()
