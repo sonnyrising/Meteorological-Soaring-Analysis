@@ -470,5 +470,5 @@ class Analyse_Data_Window(QMainWindow):
 # view_data_window = Analyse_Data_Window()
 # ##Open the window maximized (Windowed FullScreen)
 # view_data_window.showMaximized()
-# ##Run the application
+# ##Ensures the app closes properly
 # sys.exit(app.exec())
