@@ -54,6 +54,13 @@ from MSA_Utils import (
 ##Pandas used for data manipulation
 import pandas as pd
 
+##SkLearn used to calculate r^2 values for line of best fit
+from sklearn.metrics import r2_score
+
+##Theil-Sen Regression used to find the line of best fit
+##This is a robust method that is less sensitive to outliers
+from sklearn.linear_model import TheilSenRegressor
+
 class Analyse_Data_Window(QMainWindow):
 
     def __init__(self):
@@ -296,12 +303,36 @@ class Analyse_Data_Window(QMainWindow):
         ##Drop any rows where the conversion failed
         merged_df = merged_df.dropna()
         
+        ##Iterate hrough degrees of polynomial to find the best fit
+        r_squared_values = {}
+        for i in range(1, 7):
+            ##Calculate the equation of the line using the polyfit method of numpy
+            coefficients = np.polyfit(merged_df['points'], merged_df['score'], i)
+            poly = np.poly1d(coefficients)
+            y_fit = poly(merged_df['points'])
+            
+            # Calculate the R² value
+            r_squared = r2_score(merged_df['score'], y_fit)
+            print(f"Degree: {i} \nR²: {r_squared}")
+            
+            ##Add the r^2 value to a dictionary with the degree of polynomial as the key
+            r_squared_values[i] = r_squared
+        
+        ##Choose the best fitting degree of polynomial
+        best_fit = max(r_squared_values, key=r_squared_values.get)
+        
+        from sklearn.preprocessing import StandardScaler
 
-        ##Calculate the equation of the line using the polyfit method of numpy
-        coefficients = np.polyfit(merged_df['points'], merged_df['score'], 4)
-        poly = np.poly1d(coefficients)
-        y_fit = poly(merged_df['points'])
-                   
+        scaler = StandardScaler()
+        weights = 1 / (1 + np.exp(-scaler.fit_transform(merged_df['points'].values.reshape(-1, 1))))
+
+        # Perform weighted polynomial fit
+        coefficients = np.polyfit(merged_df['points'], merged_df['score'], best_fit, w=weights.flatten())
+        poly_best = np.poly1d(coefficients)
+        y_fit = poly_best(merged_df['points'])
+    
+
+            
         ##Clear previous plots
         self.sc.axes.clear()
         
