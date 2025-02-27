@@ -123,7 +123,7 @@ class Analyse_Data_Window(QMainWindow):
         left_third_layout = QVBoxLayout()
         
         ##Add the user inputs for each graph
-        self.data_options = analyse_options()
+        self.data_options = analyse_options("analyse")
         left_third_layout.addWidget(self.data_options)
 
         
@@ -180,17 +180,15 @@ class Analyse_Data_Window(QMainWindow):
             
     def test(self):
         print("Test")
-        
-            
-    def plot_graph(self):
-        
+          
+    def get_data(self):
         ##Use the getter method from the data options to retrieve user inputs
         ##A dictionary is returned with the keys being the input type
-        inputsA = self.data_options.getInputs()
+        self.inputsA = self.data_options.getInputs()
         
         ##Extracts start and end dates from the dictionary
-        start_dates = [inputsA["start_date"]]
-        end_dates = [inputsA["end_date"]]
+        start_dates = [self.inputsA["start_date"]]
+        end_dates = [self.inputsA["end_date"]]
         
         ##Create an instance of the data validation class for inputs A
         validateA = input_validation(start_dates[0], end_dates[0])
@@ -198,6 +196,11 @@ class Analyse_Data_Window(QMainWindow):
         #Only plot the graph if the date inputs are valid
         if validateA.validate_date() != True:
             return(False)
+            self.validation = "failed"
+            print(self.validation)
+        else:
+            self.validation = "passed"
+            print(self.validation)
         
         ##Create an instance of data retrieval to access the user selected condition
         retriever = Retrieve_Data(
@@ -306,6 +309,9 @@ class Analyse_Data_Window(QMainWindow):
         x_values = merged_df['points']
         y_values = merged_df['score']
         
+        return (x_values, y_values, merged_df)
+        
+    def regression(self, merged_df, x_values, y_values):
         ##First quartile (low 25%)
         Q1 = x_values.quantile(0.25)
         ##Third quartile (top 25%)
@@ -354,7 +360,7 @@ class Analyse_Data_Window(QMainWindow):
         ##Calculate the line of best fit using the best fitting degree of polynomial
         coefficients = np.polyfit(x_values, y_values, best_fit)
         y_fit = np.poly1d(coefficients)(x_values)
-        
+        equation = np.poly1d(coefficients)
         
         print(f"y_fit length: {len(y_fit)}")
         print(f"Length of x_values: {len(x_values)}")
@@ -363,27 +369,49 @@ class Analyse_Data_Window(QMainWindow):
         if len(x_values) != len(y_fit):
             print("Error: x_values and y_fit have different lengths")
             return False
+        
+        return (y_fit, equation)
 
-
+    def plot_graph(self):
+        ##Use the get_data method to retrieve the data
+        retrieved_data = self.get_data()
+        if self.get_data() == False:
+            print("Validation Failed")
+            return(False)
+        
+        ##Access the data points from the retrieved data array
+        x_values = retrieved_data[0]
+        y_values = retrieved_data[1]
+        merged_df = retrieved_data[2]
+        
+        ##Use the regression method to calculate the line of best fit
+        regression_results = self.regression(merged_df, x_values, y_values)
+        y_fit = regression_results[0]
+        equation = regression_results[1]
+        print(f"length of y_fit: {len(y_fit)}")
+        
         ##Clear previous plots
         self.sc.axes.clear()
         
-        # Plot the graph as a scatter graph with reduced opacity and changed color
+        ##Plot the points as a scatter graph with reduced opacity
         self.sc.axes.scatter(
             merged_df['points'],
             merged_df['score'],
-            label=inputsA['condition'],
+            label = self.inputsA['condition'],
             color='blue',
             alpha=0.5      
         )
+        
+        ## Extrapolate the line of best fit to cover the whole graph
+        y_range = equation(merged_df['points'])
 
-        # Plot the line of best fit with increased thickness
+        ##Plot the line of best fit
         self.sc.axes.plot(
-            x_values,
-            y_fit,
+            merged_df['points'],
+            y_range,
             label='Line of Best Fit',
-            color='red',   # Change this to your desired color
-            linewidth=2    # Adjust the line thickness
+            color='red',
+            linewidth=2
         )
             
         ##Rotate the x axis label by 45 degrees
@@ -403,12 +431,12 @@ class Analyse_Data_Window(QMainWindow):
 
             
         self.sc.axes.set_xlabel(
-            inputsA['condition'] +' - ' + '(' + inputsA['region'] + ')'
+            self.inputsA['condition'] +' - ' + '(' + self.inputsA['region'] + ')'
         )
         
         ##Set the legend
         self.sc.axes.legend([
-            inputsA['condition'] +' - ' + '(' + inputsA['region'] + ')'
+            self.inputsA['condition'] +' - ' + '(' + self.inputsA['region'] + ')'
         ]
             )
             

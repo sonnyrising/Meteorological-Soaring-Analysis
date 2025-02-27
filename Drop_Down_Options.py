@@ -24,7 +24,7 @@ class options():
             "Long Mynd",
         ]
         
-        self.conditions = [
+        self.view_data_conditions = [
             'Temperature (Celcius)',
             'Humidity (%)',
             'Dew Point (Celcius)',
@@ -37,5 +37,12 @@ class options():
             "Distance Points",
             "Total Score",
             
+        ]
+        
+        self.analyse_data_conditions = [
+            'Temperature (Celcius)',
+            'Humidity (%)',
+            'Dew Point (Celcius)',
+            'Wind Speed (kph)',
         ]
         
