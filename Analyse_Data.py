@@ -340,7 +340,8 @@ class Analyse_Data_Window(QMainWindow):
         ##Iterate hrough degrees of polynomial to find the best fit
         ##Iterate from 1 to 5
         r_squared_values = {}
-        for i in range(1, 6):
+        rmse_values = {}
+        for i in range(1, 4):
             ##Calculate the equation of the line using the polyfit method of numpy
             coefficients = np.polyfit(x_values, y_values, i)
             poly = np.poly1d(coefficients)
@@ -350,11 +351,17 @@ class Analyse_Data_Window(QMainWindow):
             r_squared = r2_score(y_values, y_fit)
             print(f"Degree: {i} \nR²: {r_squared}")
             
+            errors = y_values - y_fit
+            rmse = np.sqrt(np.mean(errors ** 2))
+            print(f"RMSE: {rmse}")
+
+            
             ##Add the r^2 value to a dictionary with the degree of polynomial as the key
             r_squared_values[i] = r_squared
+            rmse_values[i] = rmse
         
         ##Choose the best fitting degree of polynomial
-        best_fit = max(r_squared_values, key=r_squared_values.get)
+        best_fit = max(rmse_values, key=rmse_values.get)
         print(f"Best fit: {best_fit}")
 
         ##Calculate the line of best fit using the best fitting degree of polynomial
@@ -362,15 +369,15 @@ class Analyse_Data_Window(QMainWindow):
         y_fit = np.poly1d(coefficients)(x_values)
         equation = np.poly1d(coefficients)
         
-        print(f"y_fit length: {len(y_fit)}")
-        print(f"Length of x_values: {len(x_values)}")
+        print(f"length of y_fit in regression: {len(y_fit)}")
+        print(f"Length of x_values in regression: {len(x_values)}")
         
         ## Ensure x_values and y_fit have the same length
         if len(x_values) != len(y_fit):
             print("Error: x_values and y_fit have different lengths")
             return False
         
-        return (y_fit, equation)
+        return (y_fit, equation, x_values)
 
     def plot_graph(self):
         ##Use the get_data method to retrieve the data
@@ -380,15 +387,21 @@ class Analyse_Data_Window(QMainWindow):
             return(False)
         
         ##Access the data points from the retrieved data array
-        x_values = retrieved_data[0]
+        self.x_values = retrieved_data[0]
+        print(f"length of x_values after retrieving: {len(self.x_values)}")
         y_values = retrieved_data[1]
         merged_df = retrieved_data[2]
         
         ##Use the regression method to calculate the line of best fit
-        regression_results = self.regression(merged_df, x_values, y_values)
+        regression_results = self.regression(merged_df, self.x_values, y_values)
         y_fit = regression_results[0]
         equation = regression_results[1]
-        print(f"length of y_fit: {len(y_fit)}")
+        x_values = regression_results[2]
+        print(f"length of y_fit after retrieving: {len(y_fit)}")
+        print(f"length of x_values after retrieving: {len(x_values)}")
+        
+        ##Extrapolate the line of best fit to cover the whole graph
+        y_range = equation(merged_df['points'])
         
         ##Clear previous plots
         self.sc.axes.clear()
@@ -402,17 +415,33 @@ class Analyse_Data_Window(QMainWindow):
             alpha=0.5      
         )
         
-        ## Extrapolate the line of best fit to cover the whole graph
-        y_range = equation(merged_df['points'])
-
-        ##Plot the line of best fit
+        ##Plot the line of best fit extrapolated to cover the whole graph
         self.sc.axes.plot(
             merged_df['points'],
             y_range,
             label='Line of Best Fit',
             color='red',
+            linewidth=2,
+            alpha=0.5
+        )
+        
+        ##Plot a line of best fit using the data points used to create the line of best fit
+        print(f"Length of x_values before plotting: {len(self.x_values)}")
+        print(f"Length of y_fit before plotting: {len(y_fit)}")
+        print(f"length of merged_df['points'] before plotting: {len(merged_df['points'])}")
+        self.sc.axes.plot(
+            x_values,
+            y_fit,
+            label='Line of Best Fit',
+            color='blue',
             linewidth=2
         )
+        
+
+
+  
+        
+        
             
         ##Rotate the x axis label by 45 degrees
         self.sc.axes.set_xticklabels(self.sc.axes.get_xticklabels(), rotation=45, ha='right')
