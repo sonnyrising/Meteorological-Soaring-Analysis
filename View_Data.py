@@ -245,7 +245,7 @@ class View_Data_Window(QMainWindow):
                 print("weather")
                 pointsA = retriever.retrieve_weather('A')
             
-            ##Repeaat fo line B
+            ##Repeat for line B
             if inputsB['condition'] in self.flight_data:
                 pointsB = retriever.retrieve_flights('B')
             elif inputsB['condition'] in self.weather_data:

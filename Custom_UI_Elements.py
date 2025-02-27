@@ -219,8 +219,8 @@ class data_options(QWidget):
         ##Create instantiations of each user input widget
         self.start_input = date_input("start")
         self.end_input = date_input("end")
-        self.region_input = drop_down_menu("region")
-        self.condition_input = drop_down_menu("condition")
+        self.region_input = drop_down_menu("region", "view")
+        self.condition_input = drop_down_menu("condition", "view")
         
         #Add each widget to the layout
         graph_layout.addWidget(graph_title)
@@ -286,7 +286,7 @@ class date_input(QWidget):
 
 ##A custom drop down menu widget which adds the relevant subtitle
 class drop_down_menu(QWidget):
-    def __init__(self, region_condition):
+    def __init__(self, region_condition, view_analyse):
         
         super().__init__()
         
@@ -304,11 +304,17 @@ class drop_down_menu(QWidget):
             
         ##Signal whether this drop down if for region or condition
         if region_condition == "region":
-            title = "Region:"
+            self.title = "Region:"
             drop_down_options = options.regions
         elif region_condition == "condition":
-            title = "Condition:"
-            drop_down_options = options.conditions
+            if view_analyse == "view":
+                self.title = "Condition:"
+                drop_down_options = options.view_data_conditions
+            elif view_analyse == "analyse":
+                self.title = "Condition:"
+                drop_down_options = options.analyse_data_conditions
+            else:
+                print("Incorrect view_analyse parameter")
         else:
             print("Incorrect region_condition parameter")
         
@@ -318,8 +324,22 @@ class drop_down_menu(QWidget):
         drop_down_layout.setSpacing(10)
         
         ##Create a subtitle for the drop down menu
-        subtitle = SubTitle(title, 18)
+        subtitle = SubTitle(self.title, 18)
         subtitle.setMaximumSize(225, 60)
+        
+        ##Indicate whether this window is for the view data or analyse data window
+        if view_analyse == "view":
+            if region_condition == "region":
+                drop_down_options = region_glidingClub
+            else:
+                drop_down_options = options.view_data_conditions
+        elif view_analyse == "analyse":
+            if region_condition == "region":
+                drop_down_options = options.regions
+            else:
+                drop_down_options = options.analyse_data_conditions
+        else:
+            print("Incorrect view_analyse parameter")
         
         ##Create a drop down menu
         self.drop_down = QComboBox()
@@ -383,7 +403,7 @@ class MplCanvas(FigureCanvasQTAgg):
         
 ##A class for the inputs for the analyse data window
 class analyse_options(QWidget):
-    def __init__(self):
+    def __init__(self, view_analyse):
         super().__init__()
         
         ##Create a layout for the data options
@@ -400,8 +420,9 @@ class analyse_options(QWidget):
         ##Create instantiations of each user input widget
         self.start_input = date_input("start")
         self.end_input = date_input("end")
-        self.region_input = drop_down_menu("region")
-        self.condition_input = drop_down_menu("condition")
+        self.region_input = drop_down_menu("region", "analyse")
+        self.condition_input = drop_down_menu("condition", "analyse")
+
         
         #Add each widget to the layout
         graph_layout.addWidget(self.start_input)
