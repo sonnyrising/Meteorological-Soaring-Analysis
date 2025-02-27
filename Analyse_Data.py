@@ -306,31 +306,42 @@ class Analyse_Data_Window(QMainWindow):
         x_values = merged_df['points']
         y_values = merged_df['score']
         
-        Q1 = x_values.quantile(0.25)  # 25th percentile
-        Q3 = x_values.quantile(0.75)  # 75th percentile
+        ##First quartile (low 25%)
+        Q1 = x_values.quantile(0.25)
+        ##Third quartile (top 25%)
+        Q3 = x_values.quantile(0.75)
+        ##Interquartile range
         IQR = Q3 - Q1
 
-        # Define outlier limits
-        lower_bound = Q1 - 1.5 * IQR
-        upper_bound = Q3 + 1.5 * IQR
+        ##Define outlier limits
+        lower_bound = Q1 - (0.75 * IQR)
+        upper_bound = Q3 + (0.75 * IQR)
+        print(f"Lower bound: {lower_bound}")
+        print(f"Upper bound: {upper_bound}")
 
-        # Remove outliers
+        ##Remove outliers
         filtered_df = merged_df[(x_values >= lower_bound) & (x_values <= upper_bound)]
+        
+        ##Calculate the percentage of data removed
+        percentage_removed = (1 - len(filtered_df) / len(merged_df)) * 100
+        print(f"Percentage of data removed: {percentage_removed:.2f}%")
 
         x_values = filtered_df['points']
+        print(f"length of filtered x values: {len(x_values)}")
         y_values = filtered_df['score']
+        print(f"length of filtered y values: {len(y_values)}")
         
         ##Iterate hrough degrees of polynomial to find the best fit
         ##Iterate from 1 to 5
         r_squared_values = {}
-        for i in range(1, 5):
+        for i in range(1, 6):
             ##Calculate the equation of the line using the polyfit method of numpy
             coefficients = np.polyfit(x_values, y_values, i)
             poly = np.poly1d(coefficients)
             y_fit = poly(x_values)
             
             # Calculate the R² value
-            r_squared = r2_score(x_values, y_fit)
+            r_squared = r2_score(y_values, y_fit)
             print(f"Degree: {i} \nR²: {r_squared}")
             
             ##Add the r^2 value to a dictionary with the degree of polynomial as the key
@@ -338,9 +349,20 @@ class Analyse_Data_Window(QMainWindow):
         
         ##Choose the best fitting degree of polynomial
         best_fit = max(r_squared_values, key=r_squared_values.get)
+        print(f"Best fit: {best_fit}")
 
         ##Calculate the line of best fit using the best fitting degree of polynomial
         coefficients = np.polyfit(x_values, y_values, best_fit)
+        y_fit = np.poly1d(coefficients)(x_values)
+        
+        
+        print(f"y_fit length: {len(y_fit)}")
+        print(f"Length of x_values: {len(x_values)}")
+        
+        ## Ensure x_values and y_fit have the same length
+        if len(x_values) != len(y_fit):
+            print("Error: x_values and y_fit have different lengths")
+            return False
 
 
         ##Clear previous plots
@@ -357,7 +379,7 @@ class Analyse_Data_Window(QMainWindow):
 
         # Plot the line of best fit with increased thickness
         self.sc.axes.plot(
-            merged_df['points'],
+            x_values,
             y_fit,
             label='Line of Best Fit',
             color='red',   # Change this to your desired color
