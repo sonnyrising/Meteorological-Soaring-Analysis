@@ -229,7 +229,7 @@ class View_Data_Window(QMainWindow):
             'Wind Speed (kph)'
             ]
         
-            ## Initialize pointsA and pointsB to None
+        ## Initialize pointsA and pointsB to None
         pointsA = None
         pointsB = None
         

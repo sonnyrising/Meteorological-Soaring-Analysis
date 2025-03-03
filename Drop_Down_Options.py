@@ -3,7 +3,6 @@ class options():
         self.regions = [
                 'East Anglia',
                 'East Midlands',
-                'North Wales',
                 'North West',
                 'Scotland',
                 'South East',
@@ -15,7 +14,6 @@ class options():
         self.gliding_clubs = [
             "Kent GC",
             "Saltby",
-            "Denbigh",
             "Borders GC",
             "Aboyne GC",
             "Tibenham",
