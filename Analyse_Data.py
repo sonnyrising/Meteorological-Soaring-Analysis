@@ -295,6 +295,10 @@ class Analyse_Data_Window(QMainWindow):
         ##This ensures that every value datapoint has a corresponding score
         merged_df = pd.merge(points_df, score_df, on="date", how="inner")
         
+        if merged_df.empty:
+            print("Merged DF Empty")
+            return False
+        
         
         ##Sort the merged dataframe by the condition
         merged_df = merged_df.sort_values(by="points")
@@ -333,51 +337,98 @@ class Analyse_Data_Window(QMainWindow):
         print(f"Percentage of data removed: {percentage_removed:.2f}%")
 
         x_values = filtered_df['points']
-        print(f"length of filtered x values: {len(x_values)}")
         y_values = filtered_df['score']
-        print(f"length of filtered y values: {len(y_values)}")
         
         ##Iterate hrough degrees of polynomial to find the best fit
         ##Iterate from 1 to 5
         r_squared_values = {}
         rmse_values = {}
-        for i in range(1, 4):
+        fit_rating_values = {}
+        for i in range(1, 10):
             ##Calculate the equation of the line using the polyfit method of numpy
             coefficients = np.polyfit(x_values, y_values, i)
             poly = np.poly1d(coefficients)
             y_fit = poly(x_values)
             
-            # Calculate the R² value
+            ##Calculate the R² value
             r_squared = r2_score(y_values, y_fit)
-            print(f"Degree: {i} \nR²: {r_squared}")
+            print(f"Degree: {i}")
+            print(f"R²: {r_squared}")
             
+            ##Calculate difference between predicted y and observed y
             errors = y_values - y_fit
+            ##Calculate the root mean square of the error
             rmse = np.sqrt(np.mean(errors ** 2))
             print(f"RMSE: {rmse}")
+            
+            ##Calculate the r^2 as a percentage where 100% is best
+            r_squared_percent = (r_squared) * 100
+            
+            ##Calculate the normalised rmse (NRMSE) by dividing by the range of y values
+            y_values_range = y_values.max() - y_values.min()
+            nrmse = rmse / y_values_range
+            ##Convert nrmse to a percentage
+            nrmse_percent = (1-nrmse) * 100
 
+            
+            print(f"R² Percent: {r_squared_percent}%")
+            print(f"NRMSE Percent: {nrmse_percent}%")
+            
+            ##Create a measure of how well the line of best fit fits the data
+            ##Using both RMSE and R²
+            ##With a weighting towards RMSE
+            fit_rating = (0.7*r_squared_percent) + (nrmse_percent)
+            print()
+            print(f"Degree: {i}")
+            print(f"Fit Rating: {fit_rating}")
+            print()
             
             ##Add the r^2 value to a dictionary with the degree of polynomial as the key
             r_squared_values[i] = r_squared
             rmse_values[i] = rmse
+            fit_rating_values[i] = fit_rating
         
         ##Choose the best fitting degree of polynomial
-        best_fit = max(rmse_values, key=rmse_values.get)
-        print(f"Best fit: {best_fit}")
+        best_fit_rmse = min(rmse_values, key=rmse_values.get)
+        print(f"Best rmse: {best_fit_rmse}")
+        best_fit_r_squared = max(r_squared_values, key=r_squared_values.get)
+        print(f"Best r^2: {best_fit_r_squared}")
+        best_fit_rating = max(fit_rating_values, key=fit_rating_values.get)
+        print(f"Best fit rating: {best_fit_rating}")
+        
 
         ##Calculate the line of best fit using the best fitting degree of polynomial
-        coefficients = np.polyfit(x_values, y_values, best_fit)
-        y_fit = np.poly1d(coefficients)(x_values)
-        equation = np.poly1d(coefficients)
+        ##Calculated using root mean square error
+        coefficients_rmse = np.polyfit(x_values, y_values, best_fit_rmse)
+        y_fit_rmse = np.poly1d(coefficients)(x_values)
+        equation_rmse = np.poly1d(coefficients)
         
-        print(f"length of y_fit in regression: {len(y_fit)}")
-        print(f"Length of x_values in regression: {len(x_values)}")
+        ##Calculate the line of best fit using the best fitting degree of polynomial
+        ##Calculated using r^2
+        coefficients_r_squared = np.polyfit(x_values, y_values, best_fit_r_squared)
+        y_fit_r_squared = np.poly1d(coefficients)(x_values)
+        equation_r_squared = np.poly1d(coefficients)
+        
+        ##Calculate the line of best fit using the best fitting degree of polynomial
+        ##Calculated using the fit rating
+        coefficients_fit_rating = np.polyfit(x_values, y_values, best_fit_rating)
+        y_fit_fit_rating = np.poly1d(coefficients)(x_values)
+        equation_fit_rating = np.poly1d(coefficients)
         
         ## Ensure x_values and y_fit have the same length
         if len(x_values) != len(y_fit):
             print("Error: x_values and y_fit have different lengths")
             return False
         
-        return (y_fit, equation, x_values)
+        ##Create a dictionary containing the values for each line of best fit
+        lines_of_best_fit ={
+            'x_values' : x_values,
+            'r_squared' : (y_fit_r_squared, equation_r_squared),
+            'rmse' : (y_fit_rmse, equation_rmse),
+            'fit_rating' : (y_fit_fit_rating, equation_fit_rating)
+        }
+        
+        return (lines_of_best_fit)
 
     def plot_graph(self):
         ##Use the get_data method to retrieve the data
@@ -388,20 +439,18 @@ class Analyse_Data_Window(QMainWindow):
         
         ##Access the data points from the retrieved data array
         self.x_values = retrieved_data[0]
-        print(f"length of x_values after retrieving: {len(self.x_values)}")
         y_values = retrieved_data[1]
         merged_df = retrieved_data[2]
         
         ##Use the regression method to calculate the line of best fit
         regression_results = self.regression(merged_df, self.x_values, y_values)
-        y_fit = regression_results[0]
-        equation = regression_results[1]
-        x_values = regression_results[2]
-        print(f"length of y_fit after retrieving: {len(y_fit)}")
-        print(f"length of x_values after retrieving: {len(x_values)}")
+        ##Retrieve the equations for each line of best fit
+        equation_r_squared = regression_results['r_squared'][1]
+        equation_rmse = regression_results['rmse'][1]
+        equation_fit_rating = regression_results['fit_rating'][1]
         
-        ##Extrapolate the line of best fit to cover the whole graph
-        y_range = equation(merged_df['points'])
+        # ##Extrapolate the line of best fit to cover the whole graph
+        # y_range = equation_rmse(merged_df['points'])
         
         ##Clear previous plots
         self.sc.axes.clear()
@@ -415,25 +464,40 @@ class Analyse_Data_Window(QMainWindow):
             alpha=0.5      
         )
         
-        ##Plot the line of best fit extrapolated to cover the whole graph
+        # ##Plot the line of best fit extrapolated to cover the whole graph
+        # self.sc.axes.plot(
+        #     merged_df['points'],
+        #     y_range,
+        #     label='Line of Best Fit',
+        #     color='red',
+        #     linewidth=2,
+        #     alpha=0.5
+        # )
+        
+        ##Plot a line of best fit using the data points used to create the line of best fit with r^2
         self.sc.axes.plot(
-            merged_df['points'],
-            y_range,
-            label='Line of Best Fit',
-            color='red',
-            linewidth=2,
-            alpha=0.5
+            regression_results['x_values'],
+            regression_results['r_squared'][0],
+            label='R Squared',
+            color='blue',
+            linewidth=2
         )
         
-        ##Plot a line of best fit using the data points used to create the line of best fit
-        print(f"Length of x_values before plotting: {len(self.x_values)}")
-        print(f"Length of y_fit before plotting: {len(y_fit)}")
-        print(f"length of merged_df['points'] before plotting: {len(merged_df['points'])}")
+        ##Plot a line of best fit using the data points used to create the line of best fit with rmse
         self.sc.axes.plot(
-            x_values,
-            y_fit,
-            label='Line of Best Fit',
-            color='blue',
+            regression_results['x_values'],
+            regression_results['rmse'][0],
+            label='RMSE',
+            color='green',
+            linewidth=2
+        )
+        
+        ##Plot a line of best fit using the data points used to create the line of best fit with rmse
+        self.sc.axes.plot(
+            regression_results['x_values'],
+            regression_results['fit_rating'][0],
+            label='Fit Rating',
+            color='pink',
             linewidth=2
         )
         

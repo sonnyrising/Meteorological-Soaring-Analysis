@@ -89,7 +89,9 @@ class Retrieve_Data:
         end_date = inputs['end_date'].toString("yyyy-MM-dd")
         
         condition = inputs['condition']
-        region = inputs['region']
+        ##Split the region drop down into just the region
+        ##Remove the gliding club
+        region = inputs['region'].split(' - ')[0]
         
         ##Use the lookup table in lookup_tables to convert the
         ##Drop Down titles into field headings
@@ -108,7 +110,10 @@ class Retrieve_Data:
         print(f"Making query \n query: {query}")      
     
         ##Open the database temporarily ensuring it is closed when finished with
-        with sqlite3.connect('MSA.db', timeout=30) as conn:
+        with sqlite3.connect(
+            r'C:\Users\sonny\OneDrive\Documents\GitHub\Meteorological-Soaring-Analysis\MSA2',
+            timeout=30
+            ) as conn:
             ##Create an instance of cursor
             cursor = conn.cursor()
             ##Execute the query defined earlier
