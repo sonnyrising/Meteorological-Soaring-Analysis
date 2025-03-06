@@ -162,7 +162,9 @@ class Retrieve_Data:
         start_date = inputs['start_date'].toString("yyyy-MM-dd")
         end_date = inputs['end_date'].toString("yyyy-MM-dd")
         condition = inputs['condition']
-        region = inputs['region']
+        ##Split the region drop down into just the region
+        ##Remove the gliding club
+        region = inputs['region'].split(' - ')[0]
         
         
         ##Create an instance of lookup_tables
@@ -364,7 +366,9 @@ class Retrieve_Data:
         openmeteo = openmeteo_requests.Client(session = retry_session)
         
         condition = inputs["condition"]
-        region = inputs["region"]
+        ##Split the region drop down into just the region
+        ##Remove the gliding club
+        region = inputs['region'].split(' - ')[0]
         ##Convert to the column heading used in the db using the lookup table
         lookupObject = lookup_tables()
         condition = lookupObject.conditionLookup[condition]
@@ -432,4 +436,7 @@ class Retrieve_Data:
         else:
             print("Error: API range = 0")
             return None
+        
+        
+
             
