@@ -10,6 +10,7 @@ from scipy.optimize import (
 )
 
 
+
 class Maths_Functions:
     def __init__(self):
         pass

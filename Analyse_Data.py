@@ -1,14 +1,5 @@
 import sys
 
-##Used to ensure dates are in correct format for matplotlib
-from datetime import(
-    datetime,
-    timedelta,
-)
-
-##Used for numerical methods for matplotlib graphs
-import numpy as np
-
 ##Import classes from my own custom UI Elements
 from Custom_UI_Elements import (
     Menu_Button,
@@ -17,7 +8,6 @@ from Custom_UI_Elements import (
     Title,
     SubTitle,
     analyse_options,
-    error_message,
     MplCanvas,
 )
 
@@ -28,38 +18,29 @@ from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QHBoxLayout,
-    QCheckBox,
 )
 
 ##PyQt GUI Element (used for images)
 from PyQt6.QtGui import QIcon
 
 ##Used to plot graphs with matplotlib
-from matplotlib.figure import Figure
 from matplotlib.ticker import MaxNLocator
-import matplotlib.dates as mdates
 
 ##Integrates matplotlib with PyQt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
-
-##List of options in drop down menu
-from Drop_Down_Options import options
 
 ##Mehtods to retrieve data from database /api and input validation
 from MSA_Utils import (
     Retrieve_Data,
     input_validation,
 )
+##Mathematical functions from my own custom class
+from Maths_Functions import (
+    Maths_Functions
+)
 
-##Pandas used for data manipulation
+##Used for some data manipulation
 import pandas as pd
-
-##SkLearn used to calculate r^2 values for line of best fit
-from sklearn.metrics import r2_score
-
-##Theil-Sen Regression used to find the line of best fit
-##This is a robust method that is less sensitive to outliers
-from sklearn.linear_model import TheilSenRegressor
 
 class Analyse_Data_Window(QMainWindow):
 
@@ -295,6 +276,8 @@ class Analyse_Data_Window(QMainWindow):
         ##This ensures that every value datapoint has a corresponding score
         merged_df = pd.merge(points_df, score_df, on="date", how="inner")
         
+        ##Check the dataframe isn't 0
+        ##To prevent division by 0
         if merged_df.empty:
             print("Merged DF Empty")
             return False
@@ -314,121 +297,6 @@ class Analyse_Data_Window(QMainWindow):
         y_values = merged_df['score']
         
         return (x_values, y_values, merged_df)
-        
-    def regression(self, merged_df, x_values, y_values):
-        ##First quartile (low 25%)
-        Q1 = x_values.quantile(0.25)
-        ##Third quartile (top 25%)
-        Q3 = x_values.quantile(0.75)
-        ##Interquartile range
-        IQR = Q3 - Q1
-
-        ##Define outlier limits
-        lower_bound = Q1 - (0.75 * IQR)
-        upper_bound = Q3 + (0.75 * IQR)
-        print(f"Lower bound: {lower_bound}")
-        print(f"Upper bound: {upper_bound}")
-
-        ##Remove outliers
-        filtered_df = merged_df[(x_values >= lower_bound) & (x_values <= upper_bound)]
-        
-        ##Calculate the percentage of data removed
-        percentage_removed = (1 - len(filtered_df) / len(merged_df)) * 100
-        print(f"Percentage of data removed: {percentage_removed:.2f}%")
-
-        x_values = filtered_df['points']
-        y_values = filtered_df['score']
-        
-        ##Iterate hrough degrees of polynomial to find the best fit
-        ##Iterate from 1 to 5
-        r_squared_values = {}
-        rmse_values = {}
-        fit_rating_values = {}
-        for i in range(1, 10):
-            ##Calculate the equation of the line using the polyfit method of numpy
-            coefficients = np.polyfit(x_values, y_values, i)
-            poly = np.poly1d(coefficients)
-            y_fit = poly(x_values)
-            
-            ##Calculate the R² value
-            r_squared = r2_score(y_values, y_fit)
-            print(f"Degree: {i}")
-            print(f"R²: {r_squared}")
-            
-            ##Calculate difference between predicted y and observed y
-            errors = y_values - y_fit
-            ##Calculate the root mean square of the error
-            rmse = np.sqrt(np.mean(errors ** 2))
-            print(f"RMSE: {rmse}")
-            
-            ##Calculate the r^2 as a percentage where 100% is best
-            r_squared_percent = (r_squared) * 100
-            
-            ##Calculate the normalised rmse (NRMSE) by dividing by the range of y values
-            y_values_range = y_values.max() - y_values.min()
-            nrmse = rmse / y_values_range
-            ##Convert nrmse to a percentage
-            nrmse_percent = (1-nrmse) * 100
-
-            
-            print(f"R² Percent: {r_squared_percent}%")
-            print(f"NRMSE Percent: {nrmse_percent}%")
-            
-            ##Create a measure of how well the line of best fit fits the data
-            ##Using both RMSE and R²
-            ##With a weighting towards RMSE
-            fit_rating = (0.7*r_squared_percent) + (nrmse_percent)
-            print()
-            print(f"Degree: {i}")
-            print(f"Fit Rating: {fit_rating}")
-            print()
-            
-            ##Add the r^2 value to a dictionary with the degree of polynomial as the key
-            r_squared_values[i] = r_squared
-            rmse_values[i] = rmse
-            fit_rating_values[i] = fit_rating
-        
-        ##Choose the best fitting degree of polynomial
-        best_fit_rmse = min(rmse_values, key=rmse_values.get)
-        print(f"Best rmse: {best_fit_rmse}")
-        best_fit_r_squared = max(r_squared_values, key=r_squared_values.get)
-        print(f"Best r^2: {best_fit_r_squared}")
-        best_fit_rating = max(fit_rating_values, key=fit_rating_values.get)
-        print(f"Best fit rating: {best_fit_rating}")
-        
-
-        ##Calculate the line of best fit using the best fitting degree of polynomial
-        ##Calculated using root mean square error
-        coefficients_rmse = np.polyfit(x_values, y_values, best_fit_rmse)
-        y_fit_rmse = np.poly1d(coefficients)(x_values)
-        equation_rmse = np.poly1d(coefficients)
-        
-        ##Calculate the line of best fit using the best fitting degree of polynomial
-        ##Calculated using r^2
-        coefficients_r_squared = np.polyfit(x_values, y_values, best_fit_r_squared)
-        y_fit_r_squared = np.poly1d(coefficients)(x_values)
-        equation_r_squared = np.poly1d(coefficients)
-        
-        ##Calculate the line of best fit using the best fitting degree of polynomial
-        ##Calculated using the fit rating
-        coefficients_fit_rating = np.polyfit(x_values, y_values, best_fit_rating)
-        y_fit_fit_rating = np.poly1d(coefficients)(x_values)
-        equation_fit_rating = np.poly1d(coefficients)
-        
-        ## Ensure x_values and y_fit have the same length
-        if len(x_values) != len(y_fit):
-            print("Error: x_values and y_fit have different lengths")
-            return False
-        
-        ##Create a dictionary containing the values for each line of best fit
-        lines_of_best_fit ={
-            'x_values' : x_values,
-            'r_squared' : (y_fit_r_squared, equation_r_squared),
-            'rmse' : (y_fit_rmse, equation_rmse),
-            'fit_rating' : (y_fit_fit_rating, equation_fit_rating)
-        }
-        
-        return (lines_of_best_fit)
 
     def plot_graph(self):
         ##Use the get_data method to retrieve the data
@@ -442,15 +310,26 @@ class Analyse_Data_Window(QMainWindow):
         y_values = retrieved_data[1]
         merged_df = retrieved_data[2]
         
+        ##An instance of the maths_functions class
+        functioner = Maths_Functions()
+        
         ##Use the regression method to calculate the line of best fit
-        regression_results = self.regression(merged_df, self.x_values, y_values)
+        regression_results = functioner.regression(merged_df, self.x_values, y_values)
+        
         ##Retrieve the equations for each line of best fit
         equation_r_squared = regression_results['r_squared'][1]
         equation_rmse = regression_results['rmse'][1]
         equation_fit_rating = regression_results['fit_rating'][1]
         
-        # ##Extrapolate the line of best fit to cover the whole graph
-        # y_range = equation_rmse(merged_df['points'])
+        ##Check if all measures of fit are equal
+        if equation_r_squared == equation_rmse == equation_fit_rating:
+            print("All equations are equal")
+            self.equation = equation_fit_rating
+            
+        ##Else choose the equation with the highest fit rating
+        else:
+            self.equation = equation_fit_rating
+        
         
         ##Clear previous plots
         self.sc.axes.clear()
@@ -463,16 +342,6 @@ class Analyse_Data_Window(QMainWindow):
             color='blue',
             alpha=0.5      
         )
-        
-        # ##Plot the line of best fit extrapolated to cover the whole graph
-        # self.sc.axes.plot(
-        #     merged_df['points'],
-        #     y_range,
-        #     label='Line of Best Fit',
-        #     color='red',
-        #     linewidth=2,
-        #     alpha=0.5
-        # )
         
         ##Plot a line of best fit using the data points used to create the line of best fit with r^2
         self.sc.axes.plot(
@@ -488,7 +357,7 @@ class Analyse_Data_Window(QMainWindow):
             regression_results['x_values'],
             regression_results['rmse'][0],
             label='RMSE',
-            color='green',
+            color='pink',
             linewidth=2
         )
         
@@ -497,32 +366,28 @@ class Analyse_Data_Window(QMainWindow):
             regression_results['x_values'],
             regression_results['fit_rating'][0],
             label='Fit Rating',
-            color='pink',
+            color='red',
             linewidth=2
         )
-        
 
-
-  
-        
-        
             
         ##Rotate the x axis label by 45 degrees
         self.sc.axes.set_xticklabels(self.sc.axes.get_xticklabels(), rotation=45, ha='right')
+        
         ##Reduce size
         self.sc.axes.tick_params(axis='x', which='major', labelsize=10)
         
-        # Control the number of ticks on the y-axis
+        ##Control the number of ticks on the y-axis
         self.sc.axes.yaxis.set_major_locator(MaxNLocator(integer=True))
         
         ##Set the y axis label
         self.sc.axes.set_ylabel('Total Score')
         
-        ## Adjust the bottom margin to ensure the labels are visible
+        ##Adjust the bottom margin to ensure the labels are visible
         self.sc.figure.subplots_adjust(bottom=0.2)
         
 
-            
+        ##Set the x axis label
         self.sc.axes.set_xlabel(
             self.inputsA['condition'] +' - ' + '(' + self.inputsA['region'] + ')'
         )
@@ -533,9 +398,29 @@ class Analyse_Data_Window(QMainWindow):
         ]
             )
             
-        
+        ##Make the graph visible
         self.sc.show()
+        
+        ##Draw the graph
         self.sc.draw()
+        
+        
+    def calculate_info(self):
+        ##An instance of the maths_functions class
+        functioner = Maths_Functions()
+        
+        ##Use the maths functions to find the minimum and maximum values
+        ##Using both optimisation and differentiation
+        
+        ##Calculate the minimum and maximum values using optimisation
+        minimum_opt = functioner.max_and_min_opt(self.equation)[0]
+        maximum_opt = functioner.max_and_min_opt(self.equation)[1]
+        print(f"Minimum Value from Optimisation: {minimum_opt.fun} at x {minimum_opt.x}")
+        print(f"Maximum Value from Optimisation: {-maximum_opt.fun} at x {maximum_opt.x}")
+        
+        ##Calculate the minimum and maximum values using differentiation
+        minimum_diff= functioner.max_and_min_diff(self.equation)[0]
+        maximum_diff = functioner.max_and_min_diff(self.equation)[1]
          
 ##Instantiate a QtApplication
 app = QApplication(sys.argv)

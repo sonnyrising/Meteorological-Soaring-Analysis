@@ -401,11 +401,11 @@ class View_Data_Window(QMainWindow):
         self.sc.show()
         self.sc.draw()
          
-##Instantiate a QtApplication
-app = QApplication(sys.argv)
-##Set the active window to an instance of this class
-view_data_window = View_Data_Window()
-##Open the window maximized (Windowed FullScreen)
-view_data_window.showMaximized()
-##Run the application
-sys.exit(app.exec())
+# ##Instantiate a QtApplication
+# app = QApplication(sys.argv)
+# ##Set the active window to an instance of this class
+# view_data_window = View_Data_Window()
+# ##Open the window maximized (Windowed FullScreen)
+# view_data_window.showMaximized()
+# ##Run the application
+# sys.exit(app.exec())
