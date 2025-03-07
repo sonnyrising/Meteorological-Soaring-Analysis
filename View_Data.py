@@ -123,27 +123,43 @@ class View_Data_Window(QMainWindow):
             color = '#7ED941',
             subroutine = self.plot_graph
         )
-
-        ##Set the maximum size of the plot button
-        plot_button.setMaximumSize(200, 30)
         
-        ##Create a layout to hold all of the inputs
-        left_third_layout.addWidget(plot_button)
+        ##Add a button to export the graph
+        self.export_button = Menu_Button(
+            text = 'Export Graph',
+            color = '#7ED941',
+            subroutine = self.export_graph
+        )
+
+        ##Set the maximum size of the plot and export button
+        plot_button.setMaximumSize(150, 25)
+        self.export_button.setMaximumSize(150, 25)
+        
+        ##Create a layout to hold the buttons
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(plot_button)
+        button_layout.addWidget(self.export_button)
+
+        ##Add to the input layout
+        left_third_layout.addLayout(button_layout)
+        
+        ##Hide the export button if there is no graph to export
+        self.export_button.hide()
         
         ##Add the user inputs held on the left of the screen
         main_contents_layout.addLayout(left_third_layout)
         
-
         
-        
-        # Create the maptlotlib FigureCanvas object,
-        # which defines a single set of axes as self.axes.
+        ##Create the maptlotlib FigureCanvas object,
+        ##which defines a single set of axes as self.axes.
         self.sc = MplCanvas(self, width=5, height=4, dpi=100)
+        ##Plot a line graph to test
         self.sc.axes.plot([12, 45, 106, 15, 24], [10,1,20,3,40])
+        ##Hide the graph until it is plotted with user selected data
         self.sc.hide()
 
+        ##Add the canvas to the main window layout
         main_contents_layout.addWidget(self.sc)
-        
         main_layout.addLayout(main_contents_layout)
                      
         ##Set the layout for the main widget
@@ -171,8 +187,14 @@ class View_Data_Window(QMainWindow):
             
     def test(self):
         print("Test")
+        
+    def export_graph(self):
+        self.sc.figure.savefig("graph.png")
             
     def plot_graph(self):
+        ##Display the export button
+        self.export_button.show()
+        
         lineB = False
         ##Check if the user wishes to plot a second line
         if self.line_B_checkbox.isChecked():

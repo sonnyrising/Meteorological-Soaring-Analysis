@@ -114,12 +114,28 @@ class Analyse_Data_Window(QMainWindow):
             color = '#7ED941',
             subroutine = self.plot_graph
         )
-
-        ##Set the maximum size of the plot button
-        plot_button.setMaximumSize(200, 30)
         
-        ##Create a layout to hold all of the inputs
-        left_third_layout.addWidget(plot_button)
+        ##Add a button to export the graph
+        self.export_button = Menu_Button(
+            text = 'Export Graph',
+            color = '#7ED941',
+            subroutine = self.export_graph
+        )
+
+        ##Set the maximum size of the plot and export button
+        plot_button.setMaximumSize(150, 25)
+        self.export_button.setMaximumSize(150, 25)
+        
+        ##Create a layout to hold the buttons
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(plot_button)
+        button_layout.addWidget(self.export_button)
+        
+        ##Add to the input layout
+        left_third_layout.addLayout(button_layout)
+        
+        ##Hide the export button if there is no graph to export
+        self.export_button.hide()
         
         ##Add the user inputs held on the left of the screen
         main_contents_layout.addLayout(left_third_layout)
@@ -161,8 +177,16 @@ class Analyse_Data_Window(QMainWindow):
             
     def test(self):
         print("Test")
+        
+                
+    def export_graph(self):
+        self.sc.figure.savefig("graph.png")
+            
           
     def get_data(self):
+        ##Display the export button
+        self.export_button.show()
+        
         ##Use the getter method from the data options to retrieve user inputs
         ##A dictionary is returned with the keys being the input type
         self.inputsA = self.data_options.getInputs()
@@ -422,11 +446,11 @@ class Analyse_Data_Window(QMainWindow):
         minimum_diff= functioner.max_and_min_diff(self.equation)[0]
         maximum_diff = functioner.max_and_min_diff(self.equation)[1]
          
-##Instantiate a QtApplication
-app = QApplication(sys.argv)
-##Set the active window to an instance of this class
-view_data_window = Analyse_Data_Window()
-##Open the window maximized (Windowed FullScreen)
-view_data_window.showMaximized()
-##Ensures the app closes properly
-sys.exit(app.exec())
+# ##Instantiate a QtApplication
+# app = QApplication(sys.argv)
+# ##Set the active window to an instance of this class
+# view_data_window = Analyse_Data_Window()
+# ##Open the window maximized (Windowed FullScreen)
+# view_data_window.showMaximized()
+# ##Ensures the app closes properly
+# sys.exit(app.exec())
