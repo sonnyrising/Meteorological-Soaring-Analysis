@@ -208,7 +208,7 @@ class MainWindow(QMainWindow):
         
     ##Reads the info from the relevant text file and displays it in the info widget     
     def show_info(self):
-        info_doc = open('main_menu_info.txt','r')
+        info_doc = open('README.txt','r')
         self.info_widget.setText(info_doc.read())
         self.closeButton.show()
         self.info_shown = True
