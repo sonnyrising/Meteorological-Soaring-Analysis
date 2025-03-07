@@ -152,7 +152,7 @@ class Menu_Button(QPushButton):
             color: black;
             background-color: {color}; 
             border: 1px solid black;
-            font-size: 36px;
+            font-size: 24px;
         }}
         QPushButton:hover {{
             background-color: {hover_color};
