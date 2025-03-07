@@ -1,3 +1,7 @@
+Note:
+This readme was written with help from DeepSeek AI with the prompt:
+"Please write a .README for this software, use the attached python files and word document" - I had attached each python file from the program as well the main project document.
+
 Overview:
 The Meteorological Soaring Analysis (MSA) software is a Python-based application designed to analyze and visualize meteorological and flight data. It provides tools for plotting graphs, analyzing trends, and exporting results. The software is built using the PyQt6 library for the graphical user interface (GUI) and integrates with Matplotlib for data visualization. It also interacts with a SQLite database and the Open-Meteo API to retrieve historical weather and flight data.
 
