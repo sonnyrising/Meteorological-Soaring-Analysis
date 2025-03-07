@@ -1,15 +1,5 @@
 import sys
 
-from datetime import(
-    datetime,
-    timedelta,
-)
-
-import numpy as np
-
-##Used to query the database
-import sqlite3
-
 ##Import classes from my own custom UI Elements
 from Custom_UI_Elements import (
     Menu_Button,
@@ -121,19 +111,11 @@ class View_Data_Window(QMainWindow):
         plot_button = Menu_Button(
             text = 'Plot Graph',
             color = '#7ED941',
-            subroutine = self.plot_graph
-        )
-        
-        ##Add a button to export the graph
-        self.export_button = Menu_Button(
-            text = 'Export Graph',
-            color = '#7ED941',
-            subroutine = self.export_graph
+            subroutine = self.validate_data
         )
 
-        ##Set the maximum size of the plot and export button
-        plot_button.setMaximumSize(150, 25)
-        self.export_button.setMaximumSize(150, 25)
+        ##Set the maximum size of the plot button
+        plot_button.setMaximumSize(200, 30)
         
         ##Create a layout to hold the buttons
         button_layout = QHBoxLayout()
@@ -149,17 +131,16 @@ class View_Data_Window(QMainWindow):
         ##Add the user inputs held on the left of the screen
         main_contents_layout.addLayout(left_third_layout)
         
-        
-        ##Create the maptlotlib FigureCanvas object,
-        ##which defines a single set of axes as self.axes.
-        self.sc = MplCanvas(self, width=5, height=4, dpi=100)
-        ##Plot a line graph to test
-        self.sc.axes.plot([12, 45, 106, 15, 24], [10,1,20,3,40])
-        ##Hide the graph until it is plotted with user selected data
-        self.sc.hide()
 
-        ##Add the canvas to the main window layout
-        main_contents_layout.addWidget(self.sc)
+        
+        
+        # Create the maptlotlib FigureCanvas object,
+        # which defines a single set of axes as self.axes.
+        sc = MplCanvas(self, width=5, height=4, dpi=100)
+        sc.axes.plot([12, 45, 106, 15, 24], [10,1,20,3,40])
+
+        main_contents_layout.addWidget(sc)
+        
         main_layout.addLayout(main_contents_layout)
                      
         ##Set the layout for the main widget
@@ -221,213 +202,145 @@ class View_Data_Window(QMainWindow):
             ##Create an instance of the data validation class for inputs B
             validateB = input_validation(start_dates[1], end_dates[1])
         
-        #Only plot the graph if the date inputs are valid
-        if validateA.validate_date() != True or (lineB and validateB.validate_date() != True):
+        ##If the validation class returns True, the input is valid
+        if validation_result_A == True:
+            ##Set passed to true
+            validation_passed = True
+        elif validation_result_A == "end_date before start_date":
+            ##The end date is before the start date
+            ##Create a popup to inform the user
+            popup = error_message("Error in Line A", "End Date before Start Date")
+            popup.exec()
+            validation_passed = False
+        elif validation_result_A == "start_date = end_date":
+            ##The end date is equal to the start date
+            ##Create a popup to inform the user
+            popup = error_message("Error in Line A", "Start Date equal to End Date")
+            popup.exec()
+            validation_passed = False
+        
+        ##Create an instance of input validation to the current inputs for line B
+        input_validation_B = inputValidation(start_dates[1], end_dates[1])
+        validation_result_B = input_validation_B.validateDate()
+
+        if validation_result_B == True:
+            ##Set passed to true
+            validation_passed = True
+        elif validation_result_B == "end_date before start_date":
+            ##The end date is before the start date
+            ##Create a popup to inform the user
+            popup = error_message("Error in Line B", "End Date before Start Date")
+            popup.exec()
+            validation_passed = False
+        elif validation_result_B == "start_date = end_date":
+            ##The end date is equal to the start date
+            ##Create a popup to inform the user
+            print ("start_date = end_date")
+            popup = error_message("Error in Line B", "End Date equal to Start Date")
+            popup.exec()
+            validaton_passed = False
+        
+        
+        ##Validation has been passed, return true
+        if validation_passed == True:
+            return True
+            
+            
+    def plot_graph(self):
+        ##Use the getter method from the data options to retrieve user inputs
+        ##A dictionary is returned with the keys being the input type
+        inputsA = self.data_options_A.getInputs()
+        inputsB = self.data_options_B.getInputs()
+        
+        ##Extracts start and end dates from the dictionary
+        start_dates = [inputsA['start_date'], inputsB['start_date']]
+        end_dates = [inputsA['end_date'], inputsB['end_date']]
+        
+        ##Only plot the graph if the inputs are valid
+        if self.validate_data(start_dates, end_dates) != True:
             return(False)
         
-        ##Create an instance of data retrieval
-        retriever = Retrieve_Data(
-            data_options_A = self.data_options_A,
-            data_options_B = self.data_options_B,
-            view_data = True
-            )
         
-        self.flight_data = [
-            "Distance (km)",
-            "Speed (kph)",
-            "Completed",
-            "Speed Points",
-            "Height Points",
-            "Distance Points",
-            "Bonus Points",
-            "Total Score",
-        ]
         
-        self.weather_data = [
-            'Temperature (Celcius)',
-            'Humidity (%)',
-            'Dew Point (Celcius)',
-            'Precipitation (mm)',
-            'Wind Speed (kph)'
-            ]
         
-        ## Initialize pointsA and pointsB to None
-        pointsA = None
-        pointsB = None
         
-        ##Call the correct subroutine based on if the user has requested weather or flight data
-        ##If the user has selected line B retrieve the data for both A and B
-        if lineB:
-            ##If the condition is flight data then an sql query is needed
-            if inputsA['condition'] in self.flight_data:
-                print("flight")
-                pointsA = retriever.retrieve_flights('A') 
-            ##If the condition is weather data then an API request is needed  
-            elif inputsA['condition'] in self.weather_data:
-                print("weather")
-                pointsA = retriever.retrieve_weather('A')
-            
-            ##Repeat for line B
-            if inputsB['condition'] in self.flight_data:
-                pointsB = retriever.retrieve_flights('B')
-            elif inputsB['condition'] in self.weather_data:
-                pointsB = retriever.retrieve_weather('B')
         
-        ##If the user only wants line A don't retrieve data for line B
+        
+                
+        
+        
+##A class to handle validating user inputs  
+class inputValidation:
+    def __init__(self, Pstart_date, Pend_date):
+        self.start_date = Pstart_date
+        self.end_date = Pend_date
+    
+    def validateDate(self):
+        ##Due to the QDateEdit widget, the date is already in the correct format
+        ##Minimum and maximum dates are set by the QDateEdit widget so dont need to be validated
+        
+        ##Check if dates are in the correct order
+        ##ie cant end before it starts
+        if self.start_date  < self.end_date:
+            return(True)
+        
+        ##Check if the start date is before the end date
+        elif self.start_date > self.end_date:
+            ##Return an appropriate error message to trigger a popup
+            return "end_date before start_date"
+        
+        ##Check if the start date is the same as the end date
         else:
-            if inputsA['condition'] in self.flight_data:
-                pointsA = retriever.retrieve_flights('A') 
-                print("flight")  
-            elif inputsA['condition'] in self.weather_data:
-                pointsA = retriever.retrieve_weather('A')
-                print("weather")
-            else:
-                print(f"Condition: {inputsA['condition']}")
-                print("Condition invalid")
-                
-        ## Ensure pointsA and pointsB have been retrieved
-        if pointsA is None:
-            print("Error: No data retrieved for Line A")
-            return False
-        ##Only check for line B if it is needed
-        if lineB and pointsB is None:
-            print("Error: No data retrieved for Line B")
-            return False
-        
-        
-        ##Convert the values for A into a numpy array
-        ##Convert dates from DD-MM-YYYY to YYYY-MM-DD
-        ##To support the matplotlib date format
-        datesA = [mdates.date2num(datetime.strptime(row[0], "%Y-%m-%d")) for row in pointsA]
-        ##Convert to numpy array
-        datesA_numpy = np.array(datesA)
-        ##Convert values to floats
-        valuesA = [float(row[1]) for row in pointsA]
-        ##Find the range of dates
-        date_rangeA = datesA_numpy.max() - datesA_numpy.min()
-        
-        ##Only convert and plot inputsB if the uer wants to plot them
-        if lineB:
-            ##Convert dates from DD-MM-YYYY to YYYY-MM-DD
-            ##To support the matplotlib date format
-            datesB = [mdates.date2num(datetime.strptime(row[0], "%Y-%m-%d")) for row in pointsB]
-            ##Convert to numpy array to get range
-            datesB_numpy = np.array(datesA)
-            ##Find the range of dates
-            date_rangeB = datesB_numpy.max() - datesB_numpy.min()
-            ##Convert values to floats
-            valuesB = [float(row[1]) for row in pointsB]
-            
-            
-        ##If the 2 conditions are dissimiar they must be normalised
-        if lineB:
-            self.normalised = True
-            if (inputsA["condition"] != inputsB["condition"]):
-                normalised_data = retriever.normaliseData(
-                    valuesA=pointsA,
-                    valuesB=pointsB,
-                    inputsA=inputsA,
-                    inputsB=inputsB
-                )
-                # Update valuesA for all its data points
-                for i in range(len(normalised_data[0])):
-                    valuesA[i] = normalised_data[0][i][1]
-                
-                # Update valuesB for all its data points
-                for i in range(len(normalised_data[1])):
-                    valuesB[i] = normalised_data[1][i][1]
-                    
-                    
-                    
-            else:
-                # When conditions are the same, no normalization is needed.
-                pass
-                
-            
-            
-        ##Clear previous plots
-        self.sc.axes.clear()
-        
-        ##Plot the graph
-        self.sc.axes.plot(datesA, valuesA, label='Line A')
-        ##Only plot lineB if the user has selected
-        if lineB:
-            self.sc.axes.plot(datesB, valuesB, label='Line B', alpha = 0.5)
-            
-        ## Convert date range to timedelta to be able to locate days
-        date_rangeA = timedelta(days=(datesA[-1] - datesA[0]))
-        if lineB:
-            date_rangeB = timedelta(days=(datesB[-1] - datesB[0]))
-            
-        # The largest date range should be used
-        if lineB and date_rangeB > date_rangeA:
-            date_range = date_rangeB
-        else:
-            date_range = date_rangeA
+            return "start_date = end_date"
 
-        ##Set the axis label based on the date range
-        ##If there are less than 2 months show each day
-        if date_range.days <= 60:
-            self.sc.axes.xaxis.set_major_locator(mdates.WeekdayLocator(interval=1))
-            self.sc.axes.xaxis.set_major_formatter(mdates.DateFormatter("%d %b"))
-        ##If there are less than 2 years show each month
-        elif date_range.days <= 730:
-            self.sc.axes.xaxis.set_major_locator(mdates.MonthLocator(interval=1))
-            self.sc.axes.xaxis.set_major_formatter(mdates.DateFormatter("%b %Y"))
-        ##If there is more than 2 years show each year
-        else:
-            self.sc.axes.xaxis.set_major_locator(mdates.YearLocator())
-            self.sc.axes.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
-            
-        ##Rotate the axis label by 45 degrees
-        self.sc.axes.set_xticklabels(self.sc.axes.get_xticklabels(), rotation=45, ha='right')
-        ##Reduce size
-        self.sc.axes.tick_params(axis='x', which='major', labelsize=10)
+##A class to handle retrieving data from the flights database
+##and weather API
+class Retrieve_Data:
+    def __init__(self):
+        self.inputsA = self.data_options_A.getInputs()
+        self.inputsB = self.data_options_B.getInputs()
         
-        ## Adjust the bottom margin to ensure the labels are visible
-        self.sc.figure.subplots_adjust(bottom=0.2)
+        ##Retrieve the data from the flight database
+        def retrieve_flights(self, A_or_B):
+            ##Retrieve data with the parameters from the correct input
+            if A_or_B == 'A':
+                inputs = self.inputsA
+            elif A_or_B == 'B':
+                inputs = self.inputsB
+            else:
+                return False
+            
+            start_date = inputs['start_date']
+            end_date = inputs['end_date']
+            condition = inputs['condition']
+            region = inputs['region']
+            
+            ##Use the lookup table in Drop_Down_Options to convert the
+            ##Drop Down titles into field headings
+            condition = options.conditionLookup[condition]
+            
+            ##Create an SQL query to retrieve this data from the db
+            query = (f'''SELECT Date, Region, {condition}
+                     FROM flights
+                     WHERE Region = {region} 
+                     AND Date BETWEEN {start_date} 
+                     AND {end_date}
+                     
+                     ''')            
         
-        ##Add a label to the axis
-        if lineB:
-            self.sc.axes.set_xlabel(
-                inputsA['condition'] +' - ' +'(' + inputsA['region'] + ')' +
-                ' / ' +
-                inputsB['condition'] +' - ' + '(' + inputsB['region'] + ')'
-            )
-            
-            ##Set the legend
-            self.sc.axes.legend([
-                inputsA['condition'] +' - ' + '(' + inputsA['region'] + ')',
-                inputsB['condition'] +' - ' + '(' + inputsB['region'] + ')'
-            ]
-            )
-            
-        else:
-            self.sc.axes.set_xlabel(
-                inputsA['condition'] +' - ' + '(' + inputsA['region'] + ')'
-            )
-            
-            ##Set the legend
-            self.sc.axes.legend([
-                inputsA['condition'] +' - ' + '(' + inputsA['region'] + ')'
-            ]
-            )
         
-        ##Set the y axis label if data has been normalised
-        if self.normalised:
-            self.sc.axes.set_ylabel(
-                'Normalised Values (%)'
-            )
-            
+    
         
-        self.sc.show()
-        self.sc.draw()
-         
+
+        
+        
+
+
 ##Instantiate a QtApplication
 app = QApplication(sys.argv)
-##Set the active window to an instance of this class
-view_data_window = View_Data_Window()
+##Set the active window to the main window we have been working with
+window = View_Data_Window()
 ##Open the window maximized (Windowed FullScreen)
-view_data_window.showMaximized()
+window.showMaximized()
 ##Run the application
 sys.exit(app.exec())
