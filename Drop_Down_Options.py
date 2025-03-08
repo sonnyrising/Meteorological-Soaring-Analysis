@@ -25,11 +25,17 @@ class options():
         ]
         
         self.conditions = [
+<<<<<<< HEAD
             'Temperature (Celcius)',
             'Humidity (%)',
             'Dew Point (Celcius)',
             'Precipitation (mm)',
             'Wind Speed (kph)',
+=======
+            "Rain (mm)",
+            "Wind Speed (kts)",
+            "Wind Direction (degrees)",
+>>>>>>> parent of 2b4c871 (It plots!!)
             "Distance (km)",
             "Speed (kph)",
             "Speed Points",
@@ -38,4 +44,21 @@ class options():
             "Total Score",
             
         ]
+<<<<<<< HEAD
         
+=======
+        
+        ##A lookup table to convert the text that is shown
+        ##for a condition into the field name from the db
+        self.conditionLookup = {
+            "Distance (km)" : "Scoring Distance",
+            "Speed (kph)" : "Speed (kph)",
+            "Completed" : "Completed",
+            "Speed Points" : "Vpoints",
+            "Height Points" : "Hpoints",
+            "Distance Points" : "Dpoints",
+            "Bonus Points" : "BPoints",
+            "Total Score" : "Total Score",
+            
+        }
+>>>>>>> parent of 2b4c871 (It plots!!)

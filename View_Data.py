@@ -1,5 +1,6 @@
 import sys
 
+<<<<<<< HEAD
 from datetime import(
     datetime,
     timedelta,
@@ -10,6 +11,8 @@ import numpy as np
 ##Used to query the database
 import sqlite3
 
+=======
+>>>>>>> parent of 2b4c871 (It plots!!)
 ##Import classes from my own custom UI Elements
 from Custom_UI_Elements import (
     Menu_Button,
@@ -117,7 +120,7 @@ class View_Data_Window(QMainWindow):
         plot_button = Menu_Button(
             text = 'Plot Graph',
             color = '#7ED941',
-            subroutine = self.plot_graph
+            subroutine = self.validate_data
         )
         
         ##Add a button to download the graph
@@ -144,10 +147,10 @@ class View_Data_Window(QMainWindow):
         
         # Create the maptlotlib FigureCanvas object,
         # which defines a single set of axes as self.axes.
-        self.sc = MplCanvas(self, width=5, height=4, dpi=100)
-        self.sc.axes.plot([12, 45, 106, 15, 24], [10,1,20,3,40])
-        self.sc.hide()
+        sc = MplCanvas(self, width=5, height=4, dpi=100)
+        sc.axes.plot([12, 45, 106, 15, 24], [10,1,20,3,40])
 
+<<<<<<< HEAD
         graph_layout = QVBoxLayout()
         
         graph_layout.addWidget(self.export_button)
@@ -161,6 +164,9 @@ class View_Data_Window(QMainWindow):
         graph_layout.setStretch(1, 29)
         
         main_contents_layout.addLayout(graph_layout)
+=======
+        main_contents_layout.addWidget(sc)
+>>>>>>> parent of 2b4c871 (It plots!!)
         
         main_layout.addLayout(main_contents_layout)
                      
@@ -245,6 +251,7 @@ class View_Data_Window(QMainWindow):
             input_validation_B = inputValidation(start_dates[1], end_dates[1])
             validation_result_B = input_validation_B.validateDate()
 
+<<<<<<< HEAD
             if validation_result_B == True:
                 ##Set passed to true
                 validation_passed = True
@@ -261,6 +268,24 @@ class View_Data_Window(QMainWindow):
                 popup = error_message("Error in Line B", "End Date equal to Start Date")
                 popup.exec()
                 validation_passed = False
+=======
+        if validation_result_B == True:
+            ##Set passed to true
+            validation_passed = True
+        elif validation_result_B == "end_date before start_date":
+            ##The end date is before the start date
+            ##Create a popup to inform the user
+            popup = error_message("Error in Line B", "End Date before Start Date")
+            popup.exec()
+            validation_passed = False
+        elif validation_result_B == "start_date = end_date":
+            ##The end date is equal to the start date
+            ##Create a popup to inform the user
+            print ("start_date = end_date")
+            popup = error_message("Error in Line B", "End Date equal to Start Date")
+            popup.exec()
+            validaton_passed = False
+>>>>>>> parent of 2b4c871 (It plots!!)
         
         
         ##Validation has been passed, return true
@@ -292,9 +317,10 @@ class View_Data_Window(QMainWindow):
             end_dates = [inputsA["end_date"]]
         
         ##Only plot the graph if the inputs are valid
-        if self.validate_data() != True:
+        if self.validate_data(start_dates, end_dates) != True:
             return(False)
         
+<<<<<<< HEAD
         ##Create an instance of data retrieval
         retriever = Retrieve_Data(self.data_options_A, self.data_options_B)
         
@@ -485,6 +511,17 @@ class View_Data_Window(QMainWindow):
         self.sc.draw()
         
         
+=======
+        
+        
+        
+        
+        
+        
+                
+        
+        
+>>>>>>> parent of 2b4c871 (It plots!!)
 ##A class to handle validating user inputs  
 class inputValidation:
     def __init__(self, Pstart_date, Pend_date):
@@ -512,10 +549,11 @@ class inputValidation:
 ##A class to handle retrieving data from the flights database
 ##and weather API
 class Retrieve_Data:
-    def __init__(self, data_options_A, data_options_B):
-        self.inputsA = data_options_A.getInputs()
-        self.inputsB = data_options_B.getInputs()
+    def __init__(self):
+        self.inputsA = self.data_options_A.getInputs()
+        self.inputsB = self.data_options_B.getInputs()
         
+<<<<<<< HEAD
     ##Retrieve the data from the flight database
     def retrieve_flights(self, A_or_B):
         ##Retrieve data with the parameters from the correct input
@@ -822,6 +860,36 @@ class Retrieve_Data:
         
         
 
+=======
+        ##Retrieve the data from the flight database
+        def retrieve_flights(self, A_or_B):
+            ##Retrieve data with the parameters from the correct input
+            if A_or_B == 'A':
+                inputs = self.inputsA
+            elif A_or_B == 'B':
+                inputs = self.inputsB
+            else:
+                return False
+            
+            start_date = inputs['start_date']
+            end_date = inputs['end_date']
+            condition = inputs['condition']
+            region = inputs['region']
+            
+            ##Use the lookup table in Drop_Down_Options to convert the
+            ##Drop Down titles into field headings
+            condition = options.conditionLookup[condition]
+            
+            ##Create an SQL query to retrieve this data from the db
+            query = (f'''SELECT Date, Region, {condition}
+                     FROM flights
+                     WHERE Region = {region} 
+                     AND Date BETWEEN {start_date} 
+                     AND {end_date}
+                     
+                     ''')            
+        
+>>>>>>> parent of 2b4c871 (It plots!!)
         
     
         
@@ -832,9 +900,16 @@ class Retrieve_Data:
 
 ##Instantiate a QtApplication
 app = QApplication(sys.argv)
+<<<<<<< HEAD
 ##Set the active window to an instance of this class
 view_data_window = View_Data_Window()
 ##Open the window maximized (Windowed FullScreen)
 view_data_window.showMaximized()
+=======
+##Set the active window to the main window we have been working with
+window = View_Data_Window()
+##Open the window maximized (Windowed FullScreen)
+window.showMaximized()
+>>>>>>> parent of 2b4c871 (It plots!!)
 ##Run the application
 sys.exit(app.exec())
