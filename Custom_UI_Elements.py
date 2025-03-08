@@ -304,8 +304,8 @@ class drop_down_menu(QWidget):
             
         ##Signal whether this drop down if for region or condition
         if region_condition == "region":
-            title = "Region:"
-            drop_down_options = region_glidingClub
+            self.title = "Region:"
+            drop_down_options = options.regions
         elif region_condition == "condition":
             if view_analyse == "view":
                 self.title = "Condition:"

@@ -10,6 +10,7 @@ from Custom_UI_Elements import (
     data_options,
     error_message,
     MplCanvas,
+    MplCanvas,
 )
 
 from PyQt6.QtWidgets import (
@@ -20,6 +21,8 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QCheckBox,
+    QLabel,
+    QCheckBox,
 )
 
 from PyQt6.QtGui import QIcon
@@ -27,8 +30,15 @@ from PyQt6.QtGui import QIcon
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 import matplotlib.dates as mdates
+import matplotlib.dates as mdates
 
 from Drop_Down_Options import options
+
+##Mehtods to retrieve data from database /api and input validation
+from MSA_Utils import (
+    Retrieve_Data,
+    input_validation,
+)
 
 ##Mehtods to retrieve data from database /api and input validation
 from MSA_Utils import (
@@ -43,11 +53,14 @@ class View_Data_Window(QMainWindow):
         super().__init__()
         
         self.normalised = True
+        
+        self.normalised = True
 
         self.setWindowTitle("Meteorological Soaring Analysis")
         self.setWindowIcon(QIcon("logo.png"))
         
         ##Instantiate both layouts as a widget
+        main_widget = QWidget()
         main_widget = QWidget()
         
         ##Creates the title bar using the custom title class
@@ -102,8 +115,10 @@ class View_Data_Window(QMainWindow):
         ##Add the user inputs for each graph
         self.data_options_A = data_options("Line A:")
         self.line_B_checkbox = QCheckBox('Plot Second Line', self)
+        self.line_B_checkbox = QCheckBox('Plot Second Line', self)
         self.data_options_B = data_options("Line B:")
         left_third_layout.addWidget(self.data_options_A)
+        left_third_layout.addWidget(self.line_B_checkbox)
         left_third_layout.addWidget(self.line_B_checkbox)
         left_third_layout.addWidget(self.data_options_B)
         
@@ -117,6 +132,16 @@ class View_Data_Window(QMainWindow):
         ##Set the maximum size of the plot button
         plot_button.setMaximumSize(200, 30)
         
+        ##Create a layout to hold the buttons
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(plot_button)
+        button_layout.addWidget(self.export_button)
+
+        ##Add to the input layout
+        left_third_layout.addLayout(button_layout)
+        
+        ##Hide the export button if there is no graph to export
+        self.export_button.hide()
         ##Create a layout to hold the buttons
         button_layout = QHBoxLayout()
         button_layout.addWidget(plot_button)
@@ -145,8 +170,10 @@ class View_Data_Window(QMainWindow):
                      
         ##Set the layout for the main widget
         main_widget.setLayout(main_layout)
+        main_widget.setLayout(main_layout)
         
         ##Set the main widget as the central widget of the main window
+        self.setCentralWidget(main_widget)
         self.setCentralWidget(main_widget)
 
     def logo_clicked(self):
@@ -154,11 +181,15 @@ class View_Data_Window(QMainWindow):
         ##Parameter 1 is the window title
         ##Parameter 2 is the statement in the dialogue box
         quit_dialogue = Conf_Dialogue("Quit to Menu",
+        quit_dialogue = Conf_Dialogue("Quit to Menu",
                                      "Are you sure you want to quit to the Main Menu?"
                                 )
         if quit_dialogue.exec():
+        if quit_dialogue.exec():
             ##If the user clicks yes in the dialogue box, the application will quit
             import Main_Menu
+            self.main_window = Main_Menu.main_window()
+            self.main_window.showMaximized()
             self.main_window = Main_Menu.main_window()
             self.main_window.showMaximized()
             self.close()
@@ -168,6 +199,20 @@ class View_Data_Window(QMainWindow):
             
     def test(self):
         print("Test")
+        
+    def export_graph(self):
+        self.sc.figure.savefig("graph.png")
+            
+    def plot_graph(self):
+        ##Display the export button
+        self.export_button.show()
+        
+        lineB = False
+        ##Check if the user wishes to plot a second line
+        if self.line_B_checkbox.isChecked():
+            lineB = True
+        else:
+            lineB = False
         
     def export_graph(self):
         self.sc.figure.savefig("graph.png")
@@ -195,7 +240,18 @@ class View_Data_Window(QMainWindow):
         else:
             start_dates = [inputsA["start_date"]]
             end_dates = [inputsA["end_date"]]
+        if lineB:
+            start_dates = [inputsA['start_date'], inputsB['start_date']]
+            end_dates = [inputsA['end_date'], inputsB['end_date']]
+        else:
+            start_dates = [inputsA["start_date"]]
+            end_dates = [inputsA["end_date"]]
         
+        ##Create an instance of the data validation class for inputs A
+        validateA = input_validation(start_dates[0], end_dates[0])
+        if lineB:
+            ##Create an instance of the data validation class for inputs B
+            validateB = input_validation(start_dates[1], end_dates[1])
         ##Create an instance of the data validation class for inputs A
         validateA = input_validation(start_dates[0], end_dates[0])
         if lineB:
