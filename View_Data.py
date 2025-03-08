@@ -181,10 +181,9 @@ class View_Data_Window(QMainWindow):
         ##Parameter 1 is the window title
         ##Parameter 2 is the statement in the dialogue box
         quit_dialogue = Conf_Dialogue("Quit to Menu",
-        quit_dialogue = Conf_Dialogue("Quit to Menu",
                                      "Are you sure you want to quit to the Main Menu?"
                                 )
-        if quit_dialogue.exec():
+
         if quit_dialogue.exec():
             ##If the user clicks yes in the dialogue box, the application will quit
             import Main_Menu
@@ -257,6 +256,9 @@ class View_Data_Window(QMainWindow):
         if lineB:
             ##Create an instance of the data validation class for inputs B
             validateB = input_validation(start_dates[1], end_dates[1])
+        
+        ##Validate the inputs for line A
+        validation_result_A = validateA.validateDate()
         
         ##If the validation class returns True, the input is valid
         if validation_result_A == True:
