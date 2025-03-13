@@ -3,7 +3,6 @@ class options():
         self.regions = [
                 'East Anglia',
                 'East Midlands',
-                'North Wales',
                 'North West',
                 'Scotland',
                 'South East',
@@ -15,7 +14,6 @@ class options():
         self.gliding_clubs = [
             "Kent GC",
             "Saltby",
-            "Denbigh",
             "Borders GC",
             "Aboyne GC",
             "Tibenham",
@@ -25,11 +23,9 @@ class options():
         ]
         
         self.conditions = [
-            'Temperature (Celcius)',
-            'Humidity (%)',
-            'Dew Point (Celcius)',
-            'Precipitation (mm)',
-            'Wind Speed (kph)',
+            "Rain (mm)",
+            "Wind Speed (kts)",
+            "Wind Direction (degrees)",
             "Distance (km)",
             "Speed (kph)",
             "Speed Points",
@@ -39,3 +35,16 @@ class options():
             
         ]
         
+        ##A lookup table to convert the text that is shown
+        ##for a condition into the field name from the db
+        self.conditionLookup = {
+            "Distance (km)" : "Scoring Distance",
+            "Speed (kph)" : "Speed (kph)",
+            "Completed" : "Completed",
+            "Speed Points" : "Vpoints",
+            "Height Points" : "Hpoints",
+            "Distance Points" : "Dpoints",
+            "Bonus Points" : "BPoints",
+            "Total Score" : "Total Score",
+            
+        }
