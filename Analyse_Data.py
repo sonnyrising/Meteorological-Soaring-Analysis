@@ -428,29 +428,15 @@ class Analyse_Data_Window(QMainWindow):
         ##Draw the graph
         self.sc.draw()
         
+        functioner.calculate_info()
         
-    def calculate_info(self):
-        ##An instance of the maths_functions class
-        functioner = Maths_Functions()
         
-        ##Use the maths functions to find the minimum and maximum values
-        ##Using both optimisation and differentiation
-        
-        ##Calculate the minimum and maximum values using optimisation
-        minimum_opt = functioner.max_and_min_opt(self.equation)[0]
-        maximum_opt = functioner.max_and_min_opt(self.equation)[1]
-        print(f"Minimum Value from Optimisation: {minimum_opt.fun} at x {minimum_opt.x}")
-        print(f"Maximum Value from Optimisation: {-maximum_opt.fun} at x {maximum_opt.x}")
-        
-        ##Calculate the minimum and maximum values using differentiation
-        minimum_diff= functioner.max_and_min_diff(self.equation)[0]
-        maximum_diff = functioner.max_and_min_diff(self.equation)[1]
-         
-# ##Instantiate a QtApplication
-# app = QApplication(sys.argv)
-# ##Set the active window to an instance of this class
-# view_data_window = Analyse_Data_Window()
-# ##Open the window maximized (Windowed FullScreen)
-# view_data_window.showMaximized()
-# ##Ensures the app closes properly
-# sys.exit(app.exec())
+
+##Instantiate a QtApplication
+app = QApplication(sys.argv)
+##Set the active window to an instance of this class
+view_data_window = Analyse_Data_Window()
+##Open the window maximized (Windowed FullScreen)
+view_data_window.showMaximized()
+##Ensures the app closes properly
+sys.exit(app.exec())

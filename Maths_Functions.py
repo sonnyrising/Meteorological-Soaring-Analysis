@@ -12,7 +12,8 @@ from scipy.optimize import (
 
 class Maths_Functions:
     def __init__(self):
-        pass
+        ##Initlialise equation to None
+        self.equation = None
         
     def regression(self, merged_df, x_values, y_values):
         
@@ -42,7 +43,7 @@ class Maths_Functions:
         self.x_max = x_values.max()
         self.x_range = filtered_df['points'].max() - filtered_df['points'].min()
         
-        ##Iterate hrough degrees of polynomial to find the best fit
+        ##Iterate through degrees of polynomial to find the best fit
         ##Iterate from 1 to 5
         r_squared_values = {}
         rmse_values = {}
@@ -116,6 +117,7 @@ class Maths_Functions:
         coefficients_fit_rating = np.polyfit(x_values, y_values, best_fit_rating)
         y_fit_fit_rating = np.poly1d(coefficients)(x_values)
         equation_fit_rating = np.poly1d(coefficients)
+        self.equation = equation_fit_rating
         
         ## Ensure x_values and y_fit have the same length
         if len(x_values) != len(y_fit):
@@ -146,9 +148,9 @@ class Maths_Functions:
         return differentiated_equation
     
     ##Calculate maximum and minimum values
-    def max_and_min_diff(self, equation):
+    def max_and_min_diff(self):
         ##First derivative
-        first_derivative = self.differentiate(equation)
+        first_derivative = self.differentiate(self.equation)
 
         ##Second derivative
         second_derivative = self.differentiate(first_derivative)
@@ -165,9 +167,9 @@ class Maths_Functions:
         for point in critical_points:
             second_derivative_at_point = second_derivative(point)
             if second_derivative_at_point < 0:
-                maxima.append((point, equation(point)))
+                maxima.append((point, self.equation(point)))
             elif second_derivative_at_point > 0:
-                minima.append((point, equation(point)))
+                minima.append((point, self.equation(point)))
             else:
                 print(f"Point {point} is a point of inflection")
                 
@@ -181,14 +183,17 @@ class Maths_Functions:
         for point, value in minima:
             print(f"Minimum at x = {point}, value = {value}")
             
+        print(maxima, minima)
+            
         return maxima, minima
     
     ##Find maximum and minimum values using Numerical Optimisation
-    def max_and_min_opt(self, equation):
+    def max_and_min_opt(self):
         
         ##Define the function to be minimised
+        ##This function performs the function on a value (x) passed in
         def f(x):
-            return equation(x)
+            return self.equation(x)
         
         ##Calculate the minimum value within a range
         minimum = minimize_scalar(
@@ -203,8 +208,25 @@ class Maths_Functions:
             bounds = (self.x_min, self.x_max),
             method = 'bounded')
         
+        print(minimum, maximum)
+        return (minimum, maximum)
+    
+    def calculate_info(self):
+        #Use the maths functions to find the minimum and maximum values
+        #Using both optimisation and differentiation
         
-        return minimum, maximum
+        ##Calculate the minimum and maximum values using optimisation
+        optimisation_results = self.max_and_min_opt()
+        minimum_opt = optimisation_results[0]
+        maximum_opt = optimisation_results[1]
+        print(f"Minimum Value from Optimisation: {minimum_opt.fun} at x {minimum_opt.x}")
+        print(f"Maximum Value from Optimisation: {-maximum_opt.fun} at x {maximum_opt.x}")
+        
+        # ##Calculate the minimum and maximum values using differentiation
+        # differentiation_results = self.max_and_min_diff()
+        # minimum_diff= differentiation_results[0]
+        # maximum_diff = differentiation_results[1]
+         
         
         
 
