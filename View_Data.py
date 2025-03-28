@@ -349,10 +349,10 @@ class View_Data_Window(QMainWindow):
         self.sc.axes.clear()
         
         ##Plot the graph
-        self.sc.axes.plot(datesA, valuesA, label='Line A')
+        self.sc.axes.plot(datesA, valuesA, label='Line A', color = '#17becf' )
         ##Only plot lineB if the user has selected
         if lineB:
-            self.sc.axes.plot(datesB, valuesB, label='Line B', alpha = 0.5)
+            self.sc.axes.plot(datesB, valuesB, label='Line B', alpha = 0.5, color = 'red')
             
         ## Convert date range to timedelta to be able to locate days
         date_rangeA = timedelta(days=(datesA[-1] - datesA[0]))

@@ -201,7 +201,7 @@ class Maths_Functions:
             bounds = (self.x_min, self.x_max),
             method = 'bounded')
         
-        ##Calculate the maximum value within th range of the line of best fit
+        ##Calculate the maximum value within the range of the line of best fit
         ##By minimising the negative of the equation
         maximum = minimize_scalar(
             lambda x: -f(x),
@@ -222,10 +222,12 @@ class Maths_Functions:
         print(f"Minimum Value from Optimisation: {minimum_opt.fun} at x {minimum_opt.x}")
         print(f"Maximum Value from Optimisation: {-maximum_opt.fun} at x {maximum_opt.x}")
         
-        # ##Calculate the minimum and maximum values using differentiation
-        # differentiation_results = self.max_and_min_diff()
-        # minimum_diff= differentiation_results[0]
-        # maximum_diff = differentiation_results[1]
+        return {'minimum_y': minimum_opt.fun,
+                'minimum_x': minimum_opt.x,
+                'maximum_y': -maximum_opt.fun,
+                'maximum_x': maximum_opt.x
+                }
+
          
         
         

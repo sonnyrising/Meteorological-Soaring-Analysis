@@ -432,11 +432,11 @@ class Analyse_Data_Window(QMainWindow):
         
         
 
-##Instantiate a QtApplication
-app = QApplication(sys.argv)
-##Set the active window to an instance of this class
-view_data_window = Analyse_Data_Window()
-##Open the window maximized (Windowed FullScreen)
-view_data_window.showMaximized()
-##Ensures the app closes properly
-sys.exit(app.exec())
+# ##Instantiate a QtApplication
+# app = QApplication(sys.argv)
+# ##Set the active window to an instance of this class
+# view_data_window = Analyse_Data_Window()
+# ##Open the window maximized (Windowed FullScreen)
+# view_data_window.showMaximized()
+# ##Ensures the app closes properly
+# sys.exit(app.exec())
